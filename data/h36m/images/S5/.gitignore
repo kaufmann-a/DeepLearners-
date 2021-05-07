@@ -1,0 +1,5 @@
+# This .gitignore file only exists to have the empty directory tracked, so that we all have the same folder structure
+# Ignore all files in this directory ...
+*
+# ... except for this one.
+!.gitignore
