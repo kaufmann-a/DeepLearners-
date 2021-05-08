@@ -296,7 +296,7 @@ class Engine:
             name_value, perf = imdb.evaluate(preds_in_img_with_score.copy(), final_output_path, debug=debug,
                                              writer_dict=writer_dict)
             for name, value in name_value:
-                Logcreator.info('Epoch[%d] Validation-%s %f', epoch, name, value)
+                Logcreator.info(f'Epoch[{epoch}] Validation-{name} {value}')
         else:
             Logcreator.info('Test set is used, saving results to %s', final_output_path)
             _, perf = imdb.evaluate(preds_in_img_with_score.copy(), final_output_path, debug=debug,
