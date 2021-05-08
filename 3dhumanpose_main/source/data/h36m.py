@@ -9,16 +9,16 @@ import numpy as np
 import copy
 
 from source.data.JointDataset import JointDataset
-import source.helpers.img_utils
+from source.helpers.img_utils import get_single_patch_sample
 
-H36M_NAMES = ['']*17
-H36M_NAMES[0]  = 'Hip'
-H36M_NAMES[1]  = 'RHip'
-H36M_NAMES[2]  = 'RKnee'
-H36M_NAMES[3]  = 'RFoot'
-H36M_NAMES[4]  = 'LHip'
-H36M_NAMES[5]  = 'LKnee'
-H36M_NAMES[6]  = 'LFoot'
+H36M_NAMES = [''] * 17
+H36M_NAMES[0] = 'Hip'
+H36M_NAMES[1] = 'RHip'
+H36M_NAMES[2] = 'RKnee'
+H36M_NAMES[3] = 'RFoot'
+H36M_NAMES[4] = 'LHip'
+H36M_NAMES[5] = 'LKnee'
+H36M_NAMES[6] = 'LFoot'
 H36M_NAMES[7] = 'Spine'
 H36M_NAMES[8] = 'Thorax'
 H36M_NAMES[9] = 'Neck/Nose'
@@ -49,6 +49,14 @@ header_gt += 'Split'
 fmt_pred = ['%d'] + ['%.4f'] * 51
 fmt_gt = ['%d'] + ['%.4f'] * 51 + ['%d']
 
+
+def CamBackProj(cam_x, cam_y, depth, fx, fy, u, v):
+    x = (cam_x - u) / fx * depth
+    y = (cam_y - v) / fy * depth
+    z = depth
+    return x, y, z
+
+
 class H36M(JointDataset):
     name = 'h36m'
 
@@ -57,7 +65,7 @@ class H36M(JointDataset):
 
         self.parent_ids = np.array([0, 0, 1, 2, 0, 4, 5, 0, 8, 8, 9, 8, 11, 12, 8, 14, 15], dtype=np.int)
 
-        self.flip_pairs = np.array([[1, 4], [2, 5], [3, 6], [14, 11], [15, 12], [16, 13]],dtype=np.int)
+        self.flip_pairs = np.array([[1, 4], [2, 5], [3, 6], [14, 11], [15, 12], [16, 13]], dtype=np.int)
 
         self.num_joints = 17
 
@@ -65,16 +73,9 @@ class H36M(JointDataset):
 
         Logcreator.info('=> load {} samples'.format(self.db_length))
 
-
     def __getitem__(self, idx):
         db_rec = copy.deepcopy(self.db[idx])
         return self.get_data(db_rec)
-
-    def CamBackProj(cam_x, cam_y, depth, fx, fy, u, v):
-        x = (cam_x - u) / fx * depth
-        y = (cam_y - v) / fy * depth
-        z = depth
-        return x, y, z
 
     def get_data(self, the_db):
 
@@ -82,7 +83,6 @@ class H36M(JointDataset):
             image_file = os.path.join(self.root, the_db['image'])
         else:
             image_file = the_db['image']
-
 
         if the_db['is_h36m']:
             cam = the_db['cam']
@@ -92,7 +92,7 @@ class H36M(JointDataset):
         if 'joints_3d_vis' in the_db.keys() and 'joints_3d' in the_db.keys():
             joints = the_db['joints_3d'].copy()
             joints_vis = the_db['joints_3d_vis'].copy()
-            joints_vis[:,2] *= self.cfg.DATASET.Z_WEIGHT
+            joints_vis[:, 2] *= self.cfg.DATASET.Z_WEIGHT
         else:
             joints = joints_vis = None
 
@@ -107,20 +107,19 @@ class H36M(JointDataset):
                                                                  DEBUG=self.cfg.DEBUG.DEBUG)
 
         meta = {
-            'image'   : image_file,
+            'image': image_file,
             'center_x': the_db['center_x'],
             'center_y': the_db['center_y'],
-            'width'   : the_db['width'],
-            'height'  : the_db['height'],
-            'R'       : cam.R if cam is not None else np.zeros((3, 3), dtype=np.float64),
-            'T'       : cam.T if cam is not None else np.zeros((3, 1), dtype=np.float64),
-            'f'       : cam.f if cam is not None else np.zeros((2, 1), dtype=np.float64),
-            'c'       : cam.c if cam is not None else np.zeros((2, 1), dtype=np.float64),
+            'width': the_db['width'],
+            'height': the_db['height'],
+            'R': cam.R if cam is not None else np.zeros((3, 3), dtype=np.float64),
+            'T': cam.T if cam is not None else np.zeros((3, 1), dtype=np.float64),
+            'f': cam.f if cam is not None else np.zeros((2, 1), dtype=np.float64),
+            'c': cam.c if cam is not None else np.zeros((2, 1), dtype=np.float64),
             'projection_matrix': cam.projection_matrix if cam is not None else np.zeros((3, 4), dtype=np.float64)
         }
 
         return img_patch.astype(np.float32), label.astype(np.float32), label_weight.astype(np.float32), meta
-
 
     def _get_h36m_db(self):
         # create train/val/test split for H36M
@@ -128,8 +127,21 @@ class H36M(JointDataset):
                                  'annot',
                                  self.image_set + '.pkl')
 
+        # method 1: copy folder lib of original code into the project root directory and import lib
+        # import lib
+
+        # Todo: check if this loads picklefile correctly
+        # method 2: redirect modules
+        import sys
+        import source.helpers.cameras
+        # set unnecessary modules to dummy value
+        sys.modules['lib'] = "mängmol wirds"
+        sys.modules['lib.dataset'] = "eim ächli"
+        sys.modules['lib.utils'] = "schwär gmacht"
+        sys.modules['lib.utils.cameras'] = source.helpers.cameras
+
         with open(file_name, 'rb') as anno_file:
-            anno = pkl.load(anno_file) #Todo: currently loading of picklefile doesn't work
+            anno = pkl.load(anno_file)
 
         if isinstance(anno, dict):
             gt_db = [[] for i in range(self.num_cams)]  # for each cameras construct a database
@@ -137,7 +149,7 @@ class H36M(JointDataset):
             # for idx in rnd_subset:
             for idx in range(len(anno[1])):
                 for cid in range(self.num_cams):
-                    a = anno[cid+1][idx]
+                    a = anno[cid + 1][idx]
                     a['is_h36m'] = True
                     gt_db[cid].append(a)
 
@@ -157,14 +169,12 @@ class H36M(JointDataset):
 
         return gt_db
 
-
     def _get_db(self):
         gt_db = self._get_h36m_db()
 
         self.db_length = len(gt_db)
 
         return gt_db
-
 
     def evaluate(self, preds, save_path=None, debug=False, writer_dict=None):
         preds = preds[:, :, 0:3]
@@ -181,7 +191,7 @@ class H36M(JointDataset):
         pred_to_save = []
         gt_to_save = []
 
-        j14 = [0,1,2,4,5,6,7,8,9,10,11,12,14,15]
+        j14 = [0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15]
 
         dist = []
         dist_align = []
@@ -240,7 +250,7 @@ class H36M(JointDataset):
 
             # should align root, required by protocol #1
             pre_3d_kpt = pre_3d_kpt - pre_3d_kpt[root]
-            gt_3d_kpt  = gt_3d_kpt - gt_3d_kpt[root]
+            gt_3d_kpt = gt_3d_kpt - gt_3d_kpt[root]
             # pre_3d_kpt_align = pre_3d_kpt_align - pre_3d_kpt_align[root]
             # pre_3d_kpt_norm = pre_3d_kpt_norm - pre_3d_kpt_norm[root]
 
@@ -262,9 +272,9 @@ class H36M(JointDataset):
                 e_jt.append(np.linalg.norm(diff[n_jt]))
                 # e_jt_align.append(np.linalg.norm(diff_align[n_jt]))
                 # e_jt_norm.append(np.linalg.norm(diff_norm[n_jt]))
-                e_jt_x.append(np.sqrt(diff[n_jt][0]**2))
-                e_jt_y.append(np.sqrt(diff[n_jt][1]**2))
-                e_jt_z.append(np.sqrt(diff[n_jt][2]**2))
+                e_jt_x.append(np.sqrt(diff[n_jt][0] ** 2))
+                e_jt_y.append(np.sqrt(diff[n_jt][1] ** 2))
+                e_jt_z.append(np.sqrt(diff[n_jt][2] ** 2))
 
                 if np.linalg.norm(diff[n_jt]) >= 150:
                     pck.append(0)
@@ -290,7 +300,7 @@ class H36M(JointDataset):
                 import matplotlib.pyplot as plt
                 from lib.utils.vis import drawskeleton, show3Dpose
 
-                m = 2   # 1 for MPII joints, 2 for H36M joints
+                m = 2  # 1 for MPII joints, 2 for H36M joints
 
                 img = cv2.imread(self.root + gts[n_sample]['image'])
 
@@ -302,7 +312,7 @@ class H36M(JointDataset):
                 ax = fig.add_subplot(131)
                 drawskeleton(img, pre_2d_kpt, thickness=3, lcolor=lc[0], rcolor=rc[0], mpii=m)
                 drawskeleton(img, gt_2d_kpt, thickness=3, lcolor=(0, 255, 0), rcolor=(0, 255, 0), mpii=m)
-                ax.imshow(img[:,:,::-1])
+                ax.imshow(img[:, :, ::-1])
                 ax.set_title('Predictions in 2D')
 
                 ax = fig.add_subplot(132, projection='3d')
