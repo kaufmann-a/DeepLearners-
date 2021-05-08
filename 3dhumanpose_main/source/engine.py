@@ -91,6 +91,7 @@ class Engine:
         if epoch_nr != 0:  # Check if continued training
             epoch = epoch_nr + 1  # plus one to continue with the next epoch
 
+        best_perf = 0.0
         while epoch < train_parms.num_epochs:
             Logcreator.info(f"Epoch {epoch}")
 
