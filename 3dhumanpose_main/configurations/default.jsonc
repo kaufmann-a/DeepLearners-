@@ -9,16 +9,17 @@
         "folder" : "../data/h36m",
         "train_set": "train",
         "val_set": "val",
+        "Z_WEIGHT" : 1.0,
+        "image_size": [256, 256],
+        "num_cams": 4,
     },
     "training": {
         "general" : {
             "batch_size": 8,
-            "num_epochs" : 50,
+            "num_epochs" : 1,
             "checkpoint_save_interval" : 25,
             "num_workers" : 2,
             "shuffle_data" : true,
-            "image_size": [256, 256],
-            "num_cams": 4,
         },
         "model": {
             "name": "PoseAlexNetReg",

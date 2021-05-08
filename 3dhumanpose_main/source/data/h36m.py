@@ -92,7 +92,7 @@ class H36M(JointDataset):
         if 'joints_3d_vis' in the_db.keys() and 'joints_3d' in the_db.keys():
             joints = the_db['joints_3d'].copy()
             joints_vis = the_db['joints_3d_vis'].copy()
-            joints_vis[:, 2] *= self.cfg.DATASET.Z_WEIGHT
+            joints_vis[:, 2] *= self.cfg_general.Z_WEIGHT
         else:
             joints = joints_vis = None
 
@@ -103,8 +103,8 @@ class H36M(JointDataset):
                                                                  self.rect_3d_width, self.rect_3d_height,
                                                                  self.mean, self.std, self.label_func,
                                                                  joints=joints,
-                                                                 joints_vis=joints_vis,
-                                                                 DEBUG=self.cfg.DEBUG.DEBUG)
+                                                                 joints_vis=joints_vis, )
+        # DEBUG=self.cfg_general.DEBUG.DEBUG)  # TODO add debug parameter
 
         meta = {
             'image': image_file,
@@ -286,7 +286,8 @@ class H36M(JointDataset):
                 # e_jt_14_align.append(np.linalg.norm(diff_align[jt]))
                 # e_jt_14_norm.append(np.linalg.norm(diff_norm[jt]))
 
-            if self.cfg.DEBUG.DEBUG and n_sample % 100 == 0:
+            # if self.cfg_general.DEBUG.DEBUG and n_sample % 100 == 0: # TODO add debug parameter
+            if False and n_sample % 100 == 0:
                 cam = gt['cam']
                 pred = cam.camera_to_world_frame(pre_3d_kpt)
                 gt_pt = cam.camera_to_world_frame(gt_3d_kpt)
