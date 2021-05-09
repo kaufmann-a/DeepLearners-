@@ -216,7 +216,7 @@ class Engine:
 
         return train_loss
 
-    def validate(self, data_loader, epoch):
+    def validate(self, data_loader, epoch, only_prediction=False):
         """
         Evaluate model on validation data.
         """
@@ -245,15 +245,18 @@ class Engine:
                 # compute output
                 predictions = self.model(batch_data)
 
-                loss = self.loss_function(predictions, batch_label, batch_label_weight)
+                if not only_prediction:
+                    loss = self.loss_function(predictions, batch_label, batch_label_weight)
+
+                    # update loss
+                    losses.update(loss.item(), batch_size)
+
+                    # update tqdm progressbar
+                    loop.set_postfix(loss=loss.item())
+
+                    del loss
+
                 del batch_data, batch_label, batch_label_weight
-
-                # update loss
-                losses.update(loss.item(), batch_size)
-
-                # update tqdm progressbar
-                loop.set_postfix(loss=loss.item())
-                del loss
 
                 preds_in_patch_with_score.append(result_func(patch_width=256, patch_height=256, preds=predictions))
                 del predictions
@@ -283,10 +286,11 @@ class Engine:
 
             val_loss = losses.avg
 
-            Logcreator.info(f"Validation: avg. loss: {val_loss:.5f}")
+            if not only_prediction:
+                Logcreator.info(f"Validation: avg. loss: {val_loss:.5f}")
 
-            # log values
-            self.writer.add_scalar("Loss/val", val_loss, epoch)
+                # log values
+                self.writer.add_scalar("Loss/val", val_loss, epoch)
 
             return val_loss, preds_in_patch_with_score
 
@@ -349,13 +353,16 @@ class Engine:
             'val_loss': vl,
         }, os.path.join(Configuration.weights_save_folder, file_name))
 
-    def load_checkpints(self, path=None):
+    def load_checkpoints(self, path=None):
         checkpoint = torch.load(path)
-        self.model.load_state_dict(checkpoint['model_state_dict']).to(DEVICE)
+        self.model.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         self.lr_scheduler.load_state_dict(checkpoint['lr_scheduler_state_dict'])
         epoch = checkpoint['epoch']
         train_loss = checkpoint['train_loss']
         val_loss = checkpoint['val_loss']
+
+        print("Loaded model checkpoint")
+        print("Total model parameters: {:.2f}M".format(sum(p.numel() for p in self.model.parameters()) / 1000000.0))
 
         return epoch, train_loss, val_loss
