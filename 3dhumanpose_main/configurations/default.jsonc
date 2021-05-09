@@ -32,8 +32,10 @@
             "beta2": 0.999
         },
         "loss": {
-            "loss_function": "L1JointRegressionLoss",
+            "loss_function": "L1JointRegressionLoss", // "IntegralJointLocationLoss",
             "norm" : false,
+            "loss_type": "L1",
+            "output_3d": true,
         },
         "lr_scheduler": {
             "name": "stepLR",
