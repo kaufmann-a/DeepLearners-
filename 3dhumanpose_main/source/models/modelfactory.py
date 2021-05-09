@@ -52,7 +52,12 @@ class ModelFactory(object):
     @staticmethod
     def ResPoseNet_Regression(self, cfg):
         default_config = resnet_direct_regression.get_default_network_config()  # TODO use parameters from configuration file
-        return resnet_direct_regression.get_pose_net(default_config, cfg.num_joints)
+        default_config.fea_map_size = 8
+        net = resnet_direct_regression.get_pose_net(default_config, cfg.num_joints)
+        # initialize weights of backbone network
+        resnet_direct_regression.init_pose_net(net,
+                                               default_config)  # TODO add configuration parameter to set loading on/off
+        return net
 
     @staticmethod
     def get_members():
