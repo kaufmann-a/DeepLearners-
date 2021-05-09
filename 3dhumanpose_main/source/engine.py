@@ -200,6 +200,8 @@ class Engine:
                     speed=batch_size / batch_time.val,
                     data_time=data_time, loss=losses)
 
+        loop.close()
+        
         train_loss = losses.avg
 
         Logcreator.info(f"Training: avg. loss: {train_loss:.5f}")
@@ -251,6 +253,8 @@ class Engine:
 
                 preds_in_patch_with_score.append(result_func(256, 256, predictions))
                 del predictions
+
+            loop.close()
 
             _p = np.asarray(preds_in_patch_with_score)
 
