@@ -7,15 +7,17 @@ import copy
 # from lib.utils.cameras import Camera
 
 # Human3.6m IDs for training and testing
-TRAIN_SUBJECTS = [1,5,6,7,8]
-TEST_SUBJECTS  = [9,11]
+from source.helpers.cameras import Camera
+
+TRAIN_SUBJECTS = [1, 5, 6, 7, 8]
+TEST_SUBJECTS = [9, 11]
 
 # Joints in H3.6M -- data has 32 joints, but only 17 that move; these are the indices.
-H36M_NAMES = ['']*32
-H36M_NAMES[0]  = 'Hip'
-H36M_NAMES[1]  = 'RHip'
-H36M_NAMES[2]  = 'RKnee'
-H36M_NAMES[3]  = 'RFoot'
+H36M_NAMES = [''] * 32
+H36M_NAMES[0] = 'Hip'
+H36M_NAMES[1] = 'RHip'
+H36M_NAMES[2] = 'RKnee'
+H36M_NAMES[3] = 'RFoot'
 H36M_NAMES[6]  = 'LHip'
 H36M_NAMES[7]  = 'LKnee'
 H36M_NAMES[8]  = 'LFoot'
