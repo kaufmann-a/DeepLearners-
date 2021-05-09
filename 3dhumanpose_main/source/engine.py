@@ -221,9 +221,12 @@ class Engine:
 
         losses = AverageMeter()
 
+        # initialize the progressbar
+        loop = tqdm(data_loader)
+
         preds_in_patch_with_score = []
         with torch.no_grad():
-            for i, data in enumerate(data_loader):
+            for i, data in enumerate(loop):
                 batch_data, batch_label, batch_label_weight, meta = data
 
                 batch_data = batch_data.cuda()
@@ -240,6 +243,9 @@ class Engine:
 
                 # update loss
                 losses.update(loss.item(), batch_size)
+
+                # update tqdm progressbar
+                loop.set_postfix(loss=loss.item())
                 del loss
 
                 preds_in_patch_with_score.append(result_func(256, 256, predictions))
