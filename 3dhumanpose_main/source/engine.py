@@ -126,7 +126,7 @@ class Engine:
         """
         Train model for 1 epoch.
         """
-        print("Train step", flush=True)
+        print("Train step")
         self.model.train()
 
         # initialize metrics
@@ -137,6 +137,7 @@ class Engine:
         losses = AverageMeter()
 
         # progressbar
+        print(end="\r", flush=True)
         loop = tqdm(data_loader)
 
         end = time.time()
@@ -190,7 +191,7 @@ class Engine:
             end = time.time()
 
             # TODO maybe print to stdout time of one batch
-            if False:
+            if False and i == len(train_loader) - 1:
                 msg = 'Epoch: [{0}][{1}/{2}]\t' \
                       'Time {batch_time.val:.3f}s ({batch_time.avg:.3f}s)\t' \
                       'Speed {speed:.1f} samples/s\t' \
@@ -199,9 +200,11 @@ class Engine:
                     epoch, i, len(data_loader), batch_time=batch_time,
                     speed=batch_size / batch_time.val,
                     data_time=data_time, loss=losses)
+                Logcreator.info(msg)
 
         loop.close()
-        
+        print(end="\r", flush=True)
+
         train_loss = losses.avg
 
         Logcreator.info(f"Training: avg. loss: {train_loss:.5f}")
@@ -217,7 +220,7 @@ class Engine:
         """
         Evaluate model on validation data.
         """
-        print("Validation step", flush=True)
+        print("Validation step")
         self.model.eval()
 
         result_func = get_result_func()
@@ -225,6 +228,7 @@ class Engine:
         losses = AverageMeter()
 
         # initialize the progressbar
+        print(end="\r", flush=True)
         loop = tqdm(data_loader)
 
         preds_in_patch_with_score = []
@@ -255,6 +259,7 @@ class Engine:
                 del predictions
 
             loop.close()
+            print(end="\r", flush=True)
 
             _p = np.asarray(preds_in_patch_with_score)
 
@@ -304,15 +309,21 @@ class Engine:
 
         # Evaluate
         if 'joints_3d' in imdb.db[0].keys():
-            name_value, perf = imdb.evaluate(preds_in_img_with_score.copy(), final_output_path, debug=debug,
+            name_value, perf = imdb.evaluate(preds_in_img_with_score.copy(), final_output_path,
+                                             debug=debug,
                                              writer_dict=writer_dict)
             for name, value in name_value:
                 Logcreator.info(f'Epoch[{epoch}] Validation-{name} {value}')
         else:
             Logcreator.info('Test set is used, saving results to %s', final_output_path)
-            _, perf = imdb.evaluate(preds_in_img_with_score.copy(), final_output_path, debug=debug,
+            _, perf = imdb.evaluate(preds_in_img_with_score.copy(), final_output_path,
+                                    debug=debug,
                                     writer_dict=writer_dict)
             perf = 0.0
+
+        Logcreator.info("Mean per joint position error", perf)
+
+        self.writer.add_scalar("MPJPE/val", perf, epoch)
 
         return perf
 
