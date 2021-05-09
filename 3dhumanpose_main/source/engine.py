@@ -126,6 +126,7 @@ class Engine:
         """
         Train model for 1 epoch.
         """
+        print("Train step", flush=True)
         self.model.train()
 
         # initialize metrics
@@ -214,7 +215,7 @@ class Engine:
         """
         Evaluate model on validation data.
         """
-        print("Validation stage")
+        print("Validation step", flush=True)
         self.model.eval()
 
         result_func = get_result_func()
@@ -281,7 +282,7 @@ class Engine:
             return val_loss, preds_in_patch_with_score
 
     def evaluate(self, epoch, preds_in_patch_with_score, val_loader, final_output_path, debug=False, writer_dict=None):
-        print("Evaluation stage")
+        print("Evaluation step")
         # From patch to original image coordinate system
         imdb_list = val_loader.dataset.db
         imdb = val_loader.dataset
