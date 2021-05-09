@@ -1,4 +1,9 @@
+from functools import partial
+
 import numpy as np
+
+from source.configuration import Configuration
+from source.lossfunctions.loss import integral
 
 
 def generate_joint_location_label(patch_width, patch_height, joints, joints_vis):
@@ -30,8 +35,20 @@ def get_joint_regression_result(patch_width, patch_height, preds):
 
 
 def get_label_func():
+    # TODO Refactor: Maybe move code to factory and return this function with the loss function
+    loss_cfg = Configuration.get('training.loss', optional=False)
+    if loss_cfg.loss_function == "IntegralJointLocationLoss":
+        func = integral.get_label_func(loss_cfg)
+        # partially apply function (because it has additionally a config parameter)
+        return partial(func, config=loss_cfg)
     return generate_joint_location_label
 
 
 def get_result_func():
+    # TODO Refactor: move code to factory and return this function with the loss function
+    loss_cfg = Configuration.get('training.loss', optional=False)
+    if loss_cfg.loss_function == "IntegralJointLocationLoss":
+        func = integral.get_result_func(loss_cfg)
+        # partially apply function (because it has additionally a config parameter)
+        return partial(func, config=loss_cfg)
     return get_joint_regression_result

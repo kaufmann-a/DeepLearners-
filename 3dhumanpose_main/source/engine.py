@@ -255,7 +255,7 @@ class Engine:
                 loop.set_postfix(loss=loss.item())
                 del loss
 
-                preds_in_patch_with_score.append(result_func(256, 256, predictions))
+                preds_in_patch_with_score.append(result_func(patch_width=256, patch_height=256, preds=predictions))
                 del predictions
 
             loop.close()

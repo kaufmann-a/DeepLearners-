@@ -19,8 +19,7 @@ class LossFunctionFactory(object):
     @staticmethod
     def build(model):
         LossFunctionFactory.model = model
-        loss_cfg = Configuration.get(
-            'training.loss', optional=False)
+        loss_cfg = Configuration.get('training.loss', optional=False)
         return getattr(LossFunctionFactory, loss_cfg.loss_function)(LossFunctionFactory, loss_cfg)
 
     @staticmethod
