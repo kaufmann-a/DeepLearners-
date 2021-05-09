@@ -299,7 +299,7 @@ class H36M(JointDataset):
                 import cv2
                 from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
                 import matplotlib.pyplot as plt
-                from lib.utils.vis import drawskeleton, show3Dpose
+                from source.helpers.vis import drawskeleton, show3Dpose
 
                 m = 2  # 1 for MPII joints, 2 for H36M joints
 
@@ -359,7 +359,7 @@ class H36M(JointDataset):
             joint_names = H36M_NAMES
 
             for idx in range(len(joint_names)):
-                print(joint_names[idx], per_joint_error[idx])
+                Logcreator.info(joint_names[idx], per_joint_error[idx])
 
             name_value = [
                 ('hm36_17j      :', np.asarray(dist).mean()),
