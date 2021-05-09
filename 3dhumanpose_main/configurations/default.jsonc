@@ -16,13 +16,13 @@
     "training": {
         "general" : {
             "batch_size": 32,
-            "num_epochs" : 1,
-            "checkpoint_save_interval" : 25,
+            "num_epochs" : 5,
+            "checkpoint_save_interval" : 5,
             "num_workers" : 2,
             "shuffle_data" : true,
         },
         "model": {
-            "name": "PoseAlexNetReg",
+            "name": "ResPoseNet_DeconvHead",  //  ResPoseNet_Regression, PoseAlexNetReg
             "num_joints" : 17,
         },
         "optimizer": {
@@ -32,7 +32,7 @@
             "beta2": 0.999
         },
         "loss": {
-            "loss_function": "L1JointRegressionLoss", // "IntegralJointLocationLoss",
+            "loss_function": "IntegralJointLocationLoss", // L1JointRegressionLoss
             "norm" : false,
             "loss_type": "L1",
             "output_3d": true,
