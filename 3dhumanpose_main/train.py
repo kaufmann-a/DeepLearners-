@@ -49,6 +49,10 @@ if __name__ == "__main__":
     seed = 49626446
     fix_random_seeds(seed)
 
+    # log used gpu device
+    if torch.cuda.is_available():
+        Logcreator.info(torch.cuda.get_device_name(0))
+
     engine = Engine()
 
     if args.weights:
