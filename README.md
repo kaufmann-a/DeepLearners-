@@ -22,8 +22,8 @@
 3. Edit the configuration file to your needs
     - `vim ./configurations/default.jsonc`
 4. Run job on GPU
-  - `bsub -n 4 -W 6:00 -R "rusage[mem=2048, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=10240]" 'python train.py --configuration ./configurations/default.jsonc'`
-  - check job status `bbjobs` 
+  - `bsub -n 4 -W 24:00 -J "training-job" -R "rusage[mem=2048, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=10240]" 'python train.py --configuration ./configurations/default.jsonc'`
+  - check job status `bbjobs`
   - peek stdout log `bpeek`
     - `bpeek -f` to actively peek
 5. Find your training results with `ls ./trainings/`
