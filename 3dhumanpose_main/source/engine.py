@@ -9,6 +9,7 @@ __author__ = 'Andreas Kaufmann, Jona Braun, Kouroche Bouchiat'
 __email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, kbouchiat@student.ethz.ch"
 
 import os
+import sys
 
 import time
 import numpy as np
@@ -137,8 +138,7 @@ class Engine:
         losses = AverageMeter()
 
         # progressbar
-        print(end="\r", flush=True)
-        loop = tqdm(data_loader)
+        loop = tqdm(data_loader, file=sys.stdout, colour='green')
 
         end = time.time()
 
@@ -203,7 +203,6 @@ class Engine:
                 Logcreator.info(msg)
 
         loop.close()
-        print(end="\r", flush=True)
 
         train_loss = losses.avg
 
@@ -228,8 +227,7 @@ class Engine:
         losses = AverageMeter()
 
         # initialize the progressbar
-        print(end="\r", flush=True)
-        loop = tqdm(data_loader)
+        loop = tqdm(data_loader, file=sys.stdout, colour='green')
 
         preds_in_patch_with_score = []
         with torch.no_grad():
@@ -262,7 +260,6 @@ class Engine:
                 del predictions
 
             loop.close()
-            print(end="\r", flush=True)
 
             _p = np.asarray(preds_in_patch_with_score)
 
