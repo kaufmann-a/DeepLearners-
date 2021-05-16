@@ -92,7 +92,7 @@ class H36M(JointDataset):
         if 'joints_3d_vis' in the_db.keys() and 'joints_3d' in the_db.keys():
             joints = the_db['joints_3d'].copy()
             joints_vis = the_db['joints_3d_vis'].copy()
-            joints_vis[:, 2] *= self.cfg_general.Z_WEIGHT
+            joints_vis[:, 2] *= self.cfg_general.z_weight
         else:
             joints = joints_vis = None
 

@@ -9,7 +9,7 @@
         "folder" : "../data/h36m",
         "train_set": "train",
         "val_set": "val",
-        "Z_WEIGHT" : 1.0,
+        "z_weight" : 1.0,
         "image_size": [256, 256],
         "num_cams": 4,
     },
