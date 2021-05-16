@@ -18,7 +18,7 @@
             "batch_size": 32,
             "num_epochs" : 140,
             "checkpoint_save_interval" : 70,
-            "num_workers" : 2,
+            "num_workers" : 8,
             "shuffle_data" : true,
         },
         "model": {
