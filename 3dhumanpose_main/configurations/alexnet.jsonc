@@ -1,0 +1,58 @@
+{
+    "environment": {
+        "name" : "Name of the run - this is just a default config file",
+        "output_path": "trainings", //Creates a folder with name output_path in this folder traininglogs etc. will be saved
+        "log_file" : "logs.txt" //Name of the log file
+    },
+    "data_collection" : {
+        "dataset" : "h36m",
+        "folder" : "../data/h36m",
+        "train_set": "train",
+        "val_set": "val",
+        "Z_WEIGHT" : 1.0,
+        "image_size": [256, 256],
+        "num_cams": 4,
+    },
+    "training": {
+        "general" : {
+            "batch_size": 32,
+            "num_epochs" : 140,
+            "checkpoint_save_interval" : 70,
+            "num_workers" : 2,
+            "shuffle_data" : true,
+        },
+        "model": {
+            "name": "PoseAlexNetReg",
+            "num_joints" : 17,
+        },
+        "optimizer": {
+            "name": "adam",
+            "lr": 0.0001,
+            "beta1": 0.9,
+            "beta2": 0.999
+        },
+        "loss": {
+            "loss_function": "L1JointRegressionLoss",
+            "norm" : false,
+            "loss_type": "L1",
+            "output_3d": true,
+        },
+        "lr_scheduler": {
+            "name": "multiStepLR",
+            "stepLR": {
+                "step_size" : 10,
+                "gamma" : 0.1,
+            },
+            "multiStepLR": {
+                "milestones" : [90,120],
+                "gamma" : 0.1,
+            }
+        },
+    },
+    "inference" : {
+        "general" : {
+            "foreground_threshold" : 0.25,
+            "use_original_image_size" : false,
+        }
+    }
+}
