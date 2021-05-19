@@ -33,8 +33,6 @@ class L2JointHeatmapLoss(torch.nn.Module):
     def heatmap_loss_2d(heatmap, gt_joints, gt_joints_vis, sigma=1.):
         J, D, H, W = heatmap.shape
 
-        assert J == len(gt_joints) == len(gt_joints_vis)
-
         joint_losses = []
         for j in range(J):
             joint_x, joint_y = gt_joints[j]
@@ -42,7 +40,7 @@ class L2JointHeatmapLoss(torch.nn.Module):
             error_map = (heatmap - truth_map) ** 2  # Truth map is broadcasted along depth
             error_map = torch.sum(error_map, dim=(1, 2))
 
-            assert error_map.shape() == (D,)
+            assert error_map.shape() == (D,), "2d error map summed incorrectly"
 
             joint_losses.append(error_map.min())
 
@@ -52,8 +50,6 @@ class L2JointHeatmapLoss(torch.nn.Module):
     @staticmethod
     def heatmap_loss_3d(heatmap, gt_joints, gt_joints_vis, sigma=1.):
         J, D, H, W = heatmap.shape
-
-        assert J == len(gt_joints) == len(gt_joints_vis)
 
         joint_losses = []
         for j in range(J):
@@ -67,12 +63,18 @@ class L2JointHeatmapLoss(torch.nn.Module):
 
     def forward(self, heatmaps, batch_joints, batch_joints_vis):
         N, J, _, _, _ = heatmaps.shape
-        assert len(batch_joints) == N and len(batch_joints_vis) == N
+
+        assert len(batch_joints) == len(batch_joints_vis) == N, \
+            f'Batch size mismatch: {N=}, {len(batch_joints)=}, {len(batch_joints_vis)=}'
 
         batch_losses = []
         for batch_idx in range(N):
             gt_joints = batch_joints[batch_idx]
             gt_joints_vis = batch_joints_vis[batch_idx]
+
+            assert gt_joints_vis.shape == (J,), \
+                f'Invalid shape for batch_joints_vis[{batch_idx}]: expected (J,)' \
+                f'where {J=} but actual {gt_joints_vis.shape}'
 
             if gt_joints.shape == (J, 2):
                 batch_losses.append(
@@ -83,6 +85,9 @@ class L2JointHeatmapLoss(torch.nn.Module):
                     self.heatmap_loss_3d(heatmaps[batch_idx], gt_joints, gt_joints_vis, self.sigma)
                 )
             else:
-                raise AssertionError(f'Invalid shape for batch_joints[{batch_idx}]: shape must be (J, 2) or (J, 3)')
+                raise AssertionError(
+                    f'Invalid shape for batch_joints[{batch_idx}]: expected (J, 2) or (J, 3) '
+                    f'where {J=} but actual {gt_joints.shape}'
+                )
 
         return torch.cat(batch_losses).sum()
