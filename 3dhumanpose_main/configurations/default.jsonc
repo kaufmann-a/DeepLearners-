@@ -6,6 +6,9 @@
     },
     "data_collection" : {
         "dataset" : "h36m",
+        "h36m_params" : {
+            "num_joints" : 17
+        },
         "folder" : "../data/h36m",
         "train_set": "train",
         "val_set": "val",
@@ -22,19 +25,33 @@
             "shuffle_data" : true,
         },
         "model": {
-            "name": "ResPoseNet_DeconvHead",  //  ResPoseNet_Regression, PoseAlexNetReg
+            "name": "IntegralPoseRegressionModel",  //  ResPoseNet_Regression, PoseAlexNetReg
             "num_joints" : 17,
-            "model_config" : {
-                "from_model_zoo" : true,
-                "pretrained" : "",
-                "num_layers" : 50,
-                "num_deconv_layers" : 3,
-                "num_deconv_filters" : 256,
-                "num_deconv_kernel" : 4,
-                "final_conv_kernel" : 1,
-                "depth_dim" : 1,
-                "input_channel" : 3
-            }
+            "resnet_model" : "resnet50", //"resnet18", "resnet34", "resnet101", "resnet152"
+            "resnet18_params" : {
+                "layers" : [2, 2, 2, 2],
+                "channels" : [64, 64, 128, 256, 512]
+            },
+            "resnet34_params" : {
+                "layers" : [3, 4, 6, 3],
+                "channels" : [64, 64, 128, 256, 512]
+            },
+            "resnet50_params" : {
+                "layers" : [3, 4, 6, 3],
+                "channels" : [64, 256, 512, 1024, 2048]
+            },
+            "resnet101_params" : {
+                "layers" : [3, 4, 23, 3],
+                "channels" : [64, 256, 512, 1024, 2048]
+            },
+            "resnet152_params" : {
+                "layers" : [3, 8, 36, 3],
+                "channels" : [64, 256, 512, 1024, 2048]
+            },
+            "num_deconv_layers" : 3,
+            "num_deconv_filters" : 256,
+            "kernel_size" : 4,
+            "depth_dim" : 1
         },
         "optimizer": {
             "name": "adam",

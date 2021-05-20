@@ -2,20 +2,15 @@ import torch
 import torch.nn.functional as F
 import torchvision
 
+from source.models.basemodel import BaseModel
 
-def resolve_resnet_model(name, *args, **kwargs):
-    return {
-        'resnet18': torchvision.models.resnet18,
-        'resnet34': torchvision.models.resnet34,
-        'resnet50': torchvision.models.resnet50,
-        'resnet101': torchvision.models.resnet101,
-        'resnet152': torchvision.models.resnet152,
-    }[name](*args, **kwargs)
+
+
 
 
 class BackboneResNet(torch.nn.Sequential):
     def __init__(self, resnet_model):
-        resnet = resolve_resnet_model(resnet_model, pretrained=True)
+        resnet = self.resolve_resnet_model(resnet_model, pretrained=True)
         super().__init__(
             resnet.conv1,
             resnet.bn1,
@@ -26,6 +21,16 @@ class BackboneResNet(torch.nn.Sequential):
             resnet.layer3,
             resnet.layer4,
         )
+
+    @staticmethod
+    def resolve_resnet_model(name, *args, **kwargs):
+        return {
+            'resnet18': torchvision.models.resnet18,
+            'resnet34': torchvision.models.resnet34,
+            'resnet50': torchvision.models.resnet50,
+            'resnet101': torchvision.models.resnet101,
+            'resnet152': torchvision.models.resnet152,
+        }[name](*args, **kwargs)
 
 
 class JointHeatmapDeconv2x(torch.nn.Sequential):
@@ -59,19 +64,19 @@ class JointHeatmapUpsample2x(torch.nn.Sequential):
 
 
 class JointHeatmapDecoder(torch.nn.Module):
-    def __init__(self, in_channels, num_layers, num_features, kernel_size, num_joints, depth_dim):
+    def __init__(self, in_channels, num_layers, num_filters, kernel_size, num_joints, depth_dim):
         super().__init__()
         self.num_joints = num_joints
         self.depth_dim = depth_dim
 
         # TODO: Add configurable Upsample2x as an alternative to Deconv2x?
         self.upsample_features = torch.nn.Sequential(
-            [JointHeatmapDeconv2x(in_channels=in_channels if i == 0 else num_features,
-                                  out_channels=num_features, kernel_size=kernel_size) for i in range(num_layers)]
+            [JointHeatmapDeconv2x(in_channels=in_channels if i == 0 else num_filters,
+                                  out_channels=num_filters, kernel_size=kernel_size) for i in range(num_layers)]
         )
 
         # TODO: Add configurable "non-bias" end? (see `with_bias_end' in deconv_head.py)
-        self.features_to_heatmaps = torch.nn.Conv2d(num_features, num_joints * depth_dim, kernel_size=1)
+        self.features_to_heatmaps = torch.nn.Conv2d(num_filters, num_joints * depth_dim, kernel_size=1)
 
         JointHeatmapDecoder._init_weights(self)
 
@@ -132,12 +137,23 @@ class JointIntegralRegressor(torch.nn.Module):
 # DSAC - Differentiable RANSAC for Camera Localization (https://arxiv.org/abs/1611.05705)
 
 
-class ModelIntegralPoseRegression(torch.nn.Module):
-    def __init__(self, resnet_model='resnet50'):
-        super().__init__()
+class ModelIntegralPoseRegression(BaseModel):
+    name = 'IntegralPoseRegressionModel'
 
-        self.backbone = BackboneResNet(resnet_model)
-        self.joint_decoder = JointHeatmapDecoder()
+    def __init__(self, model_params, dataset_params):
+        super().__init__()
+        resnet_params = eval("model_params." + str(model_params.resnet_model) + "_params")
+        dataset_specific_params = eval("dataset_params." + str(dataset_params.dataset) + "_params")
+
+        self.backbone = BackboneResNet(model_params.resnet_model)
+
+        self.joint_decoder = JointHeatmapDecoder(in_channels=resnet_params.channels[-1],
+                                                 num_layers=model_params.num_deconv_layers,
+                                                 num_filters=model_params.num_deconv_filters,
+                                                 kernel_size=model_params.kernel_size,
+                                                 num_joints=dataset_specific_params.num_joints,
+                                                 depth_dim=model_params.depth_dim
+                                                 )
         self.joint_regressor = JointIntegralRegressor()
 
     def forward(self, input):

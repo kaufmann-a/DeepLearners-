@@ -16,11 +16,13 @@ class DataSetFactory(object):
 
     @staticmethod
     def load(general_cfg, dataset_folder, image_set, is_train):
-        dataset_cfg = Configuration.get('data_collection.dataset')
+        dataset_cfg = general_cfg.dataset
+        
+        dataset_params = eval("Configuration." + dataset_cfg + "_params")
 
         all_datasets = JointDataset.__subclasses__()
         if dataset_cfg:
-            dataset = [m(general_cfg, dataset_folder, image_set, is_train) for m in all_datasets if m.name.lower() == dataset_cfg.lower()]
+            dataset = [m(general_cfg, dataset_folder, image_set, is_train, dataset_params.num_joints) for m in all_datasets if m.name.lower() == dataset_cfg.lower()]
             if dataset and len(dataset) > 0:
                 return dataset[0]
         raise ConfigurationError('data_collection.dataset')
