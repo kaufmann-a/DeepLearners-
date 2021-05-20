@@ -114,11 +114,18 @@ class H36M(JointDataset):
 
         return img_patch.astype(np.float32), label.astype(np.float32), label_weight.astype(np.float32), meta
 
+    def _get_db(self):
+        gt_db = self._get_h36m_db()
+
+        self.db_length = len(gt_db)
+
+        return gt_db
+
     def _get_h36m_db(self):
         # create train/val/test split for H36M
         anno = self.read_annotation_file()
 
-        if isinstance(anno, dict):
+        if isinstance(anno, dict):  # is true for train and validation set
             # for each cameras construct a database/list
             gt_db = [[] for i in range(self.num_cams)]
             for idx in range(len(anno[1])):
@@ -165,13 +172,6 @@ class H36M(JointDataset):
             anno = pkl.load(anno_file)
 
         return anno
-
-    def _get_db(self):
-        gt_db = self._get_h36m_db()
-
-        self.db_length = len(gt_db)
-
-        return gt_db
 
     def evaluate(self, preds, save_path=None, debug=False, writer_dict=None):
         preds = preds[:, :, 0:3]
