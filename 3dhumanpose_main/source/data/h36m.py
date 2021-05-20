@@ -1,15 +1,14 @@
-import torch
-import pickle as pkl
-import json
-import random
+import copy
 import os
-from source.logcreator.logcreator import Logcreator
+import pickle as pkl
+import sys
 
 import numpy as np
-import copy
 
+import source.helpers.cameras
 from source.data.JointDataset import JointDataset
 from source.helpers.img_utils import get_single_patch_sample
+from source.logcreator.logcreator import Logcreator
 
 H36M_NAMES = [''] * 17
 H36M_NAMES[0] = 'Hip'
@@ -64,7 +63,6 @@ class H36M(JointDataset):
         super().__init__(general_cfg, root, image_set, is_train)
 
         self.parent_ids = np.array([0, 0, 1, 2, 0, 4, 5, 0, 8, 8, 9, 8, 11, 12, 8, 14, 15], dtype=np.int)
-
         self.flip_pairs = np.array([[1, 4], [2, 5], [3, 6], [14, 11], [15, 12], [16, 13]], dtype=np.int)
 
         self.num_joints = 17
@@ -78,21 +76,16 @@ class H36M(JointDataset):
         return self.get_data(db_rec)
 
     def get_data(self, the_db):
+        # check that it really is h36m, because all if statements in function checking h36m were removed
+        assert the_db['is_h36m']  # TODO attribute is_h36m can be removed if everything works as expected
 
-        if the_db['is_h36m']:
-            image_file = os.path.join(self.root, the_db['image'])
-        else:
-            image_file = the_db['image']
-
-        if the_db['is_h36m']:
-            cam = the_db['cam']
-        else:
-            cam = None
+        image_file = os.path.join(self.root, the_db['image'])
+        cam = the_db['cam']
 
         if 'joints_3d_vis' in the_db.keys() and 'joints_3d' in the_db.keys():
             joints = the_db['joints_3d'].copy()
             joints_vis = the_db['joints_3d_vis'].copy()
-            joints_vis[:, 2] *= self.cfg_general.z_weight
+            joints_vis[:, 2] *= self.cfg_general.z_weight  # multiply the z axes of the visibility with z_weight
         else:
             joints = joints_vis = None
 
@@ -123,43 +116,24 @@ class H36M(JointDataset):
 
     def _get_h36m_db(self):
         # create train/val/test split for H36M
-        file_name = os.path.join(self.root,
-                                 'annot',
-                                 self.image_set + '.pkl')
-
-        # method 1: copy folder lib of original code into the project root directory and import lib
-        # import lib
-
-        # Todo: check if this loads picklefile correctly
-        # method 2: redirect modules
-        import sys
-        import source.helpers.cameras
-        # set unnecessary modules to dummy value
-        sys.modules['lib'] = "mängmol wirds"
-        sys.modules['lib.dataset'] = "eim ächli"
-        sys.modules['lib.utils'] = "schwär gmacht"
-        sys.modules['lib.utils.cameras'] = source.helpers.cameras
-
-        with open(file_name, 'rb') as anno_file:
-            anno = pkl.load(anno_file)
+        anno = self.read_annotation_file()
 
         if isinstance(anno, dict):
-            gt_db = [[] for i in range(self.num_cams)]  # for each cameras construct a database
-            # rnd_subset = np.random.permutation(len(anno[1]))
-            # for idx in rnd_subset:
+            # for each cameras construct a database/list
+            gt_db = [[] for i in range(self.num_cams)]
             for idx in range(len(anno[1])):
                 for cid in range(self.num_cams):
                     a = anno[cid + 1][idx]
                     a['is_h36m'] = True
                     gt_db[cid].append(a)
 
-            # self.db_length = len(gt_db[0])
-
+            # convert the database/list per camera back to one single list -> we do not use multi view
             temp_db = []
             for db in gt_db:
                 temp_db += db
             gt_db = temp_db
-        else:
+
+        else:  # the else case is active for the test data set
             gt_db = []
 
             for idx in range(len(anno)):
@@ -168,6 +142,29 @@ class H36M(JointDataset):
                 gt_db.append(a)
 
         return gt_db
+
+    def read_annotation_file(self):
+        """
+        Reads the annotation file from the disk.
+
+        :returns: annotations
+
+        """
+        file_name = os.path.join(self.root,
+                                 'annot',
+                                 self.image_set + '.pkl')
+
+        # We use a trick to read the pickle file without the original code structure
+        # All what we need to do is to set unnecessary modules to a dummy value and redirect the cameras module
+        sys.modules['lib'] = "sometimes"
+        sys.modules['lib.dataset'] = "life"
+        sys.modules['lib.utils'] = "is not easy :-)"
+        sys.modules['lib.utils.cameras'] = source.helpers.cameras
+
+        with open(file_name, 'rb') as anno_file:
+            anno = pkl.load(anno_file)
+
+        return anno
 
     def _get_db(self):
         gt_db = self._get_h36m_db()
