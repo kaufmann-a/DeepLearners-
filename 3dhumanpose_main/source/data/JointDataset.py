@@ -47,12 +47,18 @@ H36M_TO_MPII_PERM = np.array([H36M_NAMES.index(h) for h in MPII_NAMES if h != ''
 
 class JointDataset(Dataset):
     def __init__(self, general_cfg, root, image_set, is_train):
-        self.cfg_general = general_cfg
-        self.is_train = is_train
+        """
 
+        Args:
+            general_cfg:
+            root: The root directory of the data set containing a folder 'annot' (annotations) and a folder 'images'.
+            image_set: The name of data set annotation file without the file extension:
+                       e.g. train/val/trainval/test
+            is_train: True = Is training data set.
+        """
+        self.cfg_general = general_cfg
         self.root = root
         self.image_set = image_set
-
         self.is_train = is_train
 
         self.patch_width = general_cfg.image_size[0]
@@ -72,7 +78,6 @@ class JointDataset(Dataset):
 
         self.db = []
 
-
     def generate_joint_location_label(self, patch_width, patch_height, joints, joints_vis):
         joints[:, 0] = joints[:, 0] / patch_width - 0.5
         joints[:, 1] = joints[:, 1] / patch_height - 0.5
@@ -88,10 +93,8 @@ class JointDataset(Dataset):
     def __len__(self, ):
         return self.db_length
 
-
     def __getitem__(self, idx):
         raise NotImplementedError
-
 
     def evaluate(self, preds, save_path=None, debug=False):
         raise NotImplementedError
