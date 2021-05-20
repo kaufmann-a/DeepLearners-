@@ -3,7 +3,7 @@ import torch.nn.functional as F
 import torchvision
 
 from source.models.basemodel import BaseModel
-
+from source.logcreator.logcreator import Logcreator
 
 
 
@@ -70,10 +70,10 @@ class JointHeatmapDecoder(torch.nn.Module):
         self.depth_dim = depth_dim
 
         # TODO: Add configurable Upsample2x as an alternative to Deconv2x?
-        self.upsample_features = torch.nn.Sequential(
-            [JointHeatmapDeconv2x(in_channels=in_channels if i == 0 else num_filters,
-                                  out_channels=num_filters, kernel_size=kernel_size) for i in range(num_layers)]
-        )
+        self.upsample_feature_list = torch.nn.ModuleList()
+        for i in range(num_layers):
+            self.upsample_feature_list.append(JointHeatmapDeconv2x(in_channels=in_channels if i == 0 else num_filters,
+                                  out_channels=num_filters, kernel_size=kernel_size))
 
         # TODO: Add configurable "non-bias" end? (see `with_bias_end' in deconv_head.py)
         self.features_to_heatmaps = torch.nn.Conv2d(num_filters, num_joints * depth_dim, kernel_size=1)
@@ -109,7 +109,7 @@ class JointHeatmapDecoder(torch.nn.Module):
 
 class JointIntegralRegressor(torch.nn.Module):
     def __init__(self):
-        self.__init__()
+        super().__init__()
 
     def forward(self, heatmaps):
         N, J, D, H, W = heatmaps.shape
@@ -155,6 +155,7 @@ class ModelIntegralPoseRegression(BaseModel):
                                                  depth_dim=model_params.depth_dim
                                                  )
         self.joint_regressor = JointIntegralRegressor()
+        Logcreator.info("Successfully initialized model with name IntegralPoseRegressionModel successfully initialized")
 
     def forward(self, input):
         features = self.backbone(input)
