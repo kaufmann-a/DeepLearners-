@@ -60,14 +60,14 @@ def CamBackProj(cam_x, cam_y, depth, fx, fy, u, v):
 class H36M(JointDataset):
     name = 'h36m'
 
-    def __init__(self, general_cfg, root, image_set, is_train):
-        super().__init__(general_cfg, root, image_set, is_train)
+    def __init__(self, general_cfg, root, image_set, is_train, num_joints):
+        super().__init__(general_cfg, root, image_set, is_train, num_joints)
 
         self.parent_ids = np.array([0, 0, 1, 2, 0, 4, 5, 0, 8, 8, 9, 8, 11, 12, 8, 14, 15], dtype=np.int)
 
         self.flip_pairs = np.array([[1, 4], [2, 5], [3, 6], [14, 11], [15, 12], [16, 13]], dtype=np.int)
 
-        self.num_joints = 17
+
 
         self.db = self._get_db()
 

@@ -46,7 +46,7 @@ H36M_TO_MPII_PERM = np.array([H36M_NAMES.index(h) for h in MPII_NAMES if h != ''
 
 
 class JointDataset(Dataset):
-    def __init__(self, general_cfg, root, image_set, is_train):
+    def __init__(self, general_cfg, root, image_set, is_train, num_joints):
         self.cfg_general = general_cfg
         self.is_train = is_train
 
@@ -71,6 +71,8 @@ class JointDataset(Dataset):
         self.db_length = 0
 
         self.db = []
+
+        self.num_joints = num_joints
 
 
     def generate_joint_location_label(self, patch_width, patch_height, joints, joints_vis):
