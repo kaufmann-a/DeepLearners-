@@ -5,9 +5,9 @@ import torch.nn as nn
 import math
 
 
-class L1JointRegressionLoss(nn.Module):
+class L1JointRegressionLoss_eth_code(nn.Module):
     def __init__(self, num_joints, size_average=True, reduce=True, norm=False):
-        super(L1JointRegressionLoss, self).__init__()
+        super(L1JointRegressionLoss_eth_code, self).__init__()
         self.size_average = size_average
         self.reduce = reduce
         self.num_joints = num_joints
