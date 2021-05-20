@@ -43,6 +43,8 @@ class ModelFactory(object):
     @staticmethod
     def ResPoseNet_DeconvHead(self, cfg):
         default_config = resnet_pose.get_default_network_config()  # TODO use parameters from configuration file
+        #default_config = Configuration.get('training.model.model_config')
+
         default_config.depth_dim = 64
         net = resnet_pose.get_pose_net(default_config, cfg.num_joints)
         # initialize weights of backbone network

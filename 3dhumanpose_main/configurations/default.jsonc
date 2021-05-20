@@ -24,6 +24,17 @@
         "model": {
             "name": "ResPoseNet_DeconvHead",  //  ResPoseNet_Regression, PoseAlexNetReg
             "num_joints" : 17,
+            "model_config" : {
+                "from_model_zoo" : true,
+                "pretrained" : "",
+                "num_layers" : 50,
+                "num_deconv_layers" : 3,
+                "num_deconv_filters" : 256,
+                "num_deconv_kernel" : 4,
+                "final_conv_kernel" : 1,
+                "depth_dim" : 1,
+                "input_channel" : 3
+            }
         },
         "optimizer": {
             "name": "adam",
