@@ -38,8 +38,8 @@ def from_mpii_to_hm36(db):
 class MPIIDataset(JointDataset):
     name = 'mpii'
 
-    def __init__(self, general_cfg, root, image_set, is_train):
-        super().__init__(general_cfg, root, image_set, is_train)
+    def __init__(self, general_cfg, is_train):
+        super().__init__(general_cfg, is_train)
 
         self.parent_ids = np.array(MPII_PARENT_IDS, dtype=np.int)
         self.flip_pairs = np.array(MPII_FLIP_PAIRS, dtype=np.int)

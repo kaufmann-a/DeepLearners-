@@ -59,17 +59,10 @@ class Engine:
         #                   sum(p.numel() for p in self.model.parameters() if p.requires_grad)))
 
     def train(self, epoch_nr=0):
-
-
-
         train_dataset = DataSetFactory.load(Configuration.get('data_collection'),
-                                            Configuration.get_path('data_collection.folder'),
-                                            Configuration.get('data_collection.train_set'),
                                             is_train=True)
 
         valid_dataset = DataSetFactory.load(Configuration.get('data_collection'),
-                                            Configuration.get_path('data_collection.folder'),
-                                            Configuration.get('data_collection.val_set'),
                                             is_train=False)
 
         train_loader = torch.utils.data.DataLoader(
