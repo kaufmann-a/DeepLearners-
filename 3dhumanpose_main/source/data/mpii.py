@@ -77,8 +77,7 @@ class MPIIDataset(JointDataset):
                                                                  self.rect_3d_width, self.rect_3d_height,
                                                                  self.mean, self.std, self.label_func,
                                                                  joints=joints,
-                                                                 joints_vis=joints_vis, )
-        # DEBUG=self.cfg_general.DEBUG.DEBUG)  # TODO add debug parameter
+                                                                 joints_vis=joints_vis)
 
         meta = {
             'image': image_file,
