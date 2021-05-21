@@ -1,6 +1,6 @@
 {
     "environment": {
-        "name" : "Name of the run - this is just a default config file",
+        "name" : "Old model can be removed when new is running",
         "output_path": "trainings", //Creates a folder with name output_path in this folder traininglogs etc. will be saved
         "log_file" : "logs.txt" //Name of the log file
     },
@@ -31,7 +31,7 @@
             "shuffle_data" : true,
         },
         "model": {
-            "name": "IntegralPoseRegressionModel",  //  ResPoseNet_Regression, PoseAlexNetReg
+            "name": "ResPoseNet_DeconvHead",  //  IntegralPoseRegressionModel, ResPoseNet_Regression, PoseAlexNetReg
             "num_joints" : 17,
             "resnet_model" : "resnet50", //"resnet18", "resnet34", "resnet101", "resnet152"
             "resnet18_params" : {
