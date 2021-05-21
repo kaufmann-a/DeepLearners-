@@ -187,13 +187,13 @@ class Engine:
             end = time.time()
 
             # TODO maybe print to stdout time of one batch
-            if False and i == len(train_loader) - 1:
+            if False and (batch_idx % 100 == 0 or batch_idx == len(data_loader) - 1):
                 msg = 'Epoch: [{0}][{1}/{2}]\t' \
                       'Time {batch_time.val:.3f}s ({batch_time.avg:.3f}s)\t' \
                       'Speed {speed:.1f} samples/s\t' \
                       'Data {data_time.val:.3f}s ({data_time.avg:.3f}s)\t' \
                       'Loss {loss.val:.5f} ({loss.avg:.5f})'.format(
-                    epoch, i, len(data_loader), batch_time=batch_time,
+                    epoch, batch_idx, len(data_loader), batch_time=batch_time,
                     speed=batch_size / batch_time.val,
                     data_time=data_time, loss=losses)
                 Logcreator.info(msg)
