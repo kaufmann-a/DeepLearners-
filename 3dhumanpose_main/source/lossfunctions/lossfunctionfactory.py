@@ -10,8 +10,9 @@ __email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, kbouchiat@stu
 
 from source.configuration import Configuration
 from source.lossfunctions.loss import integral
-from source.lossfunctions.lossfunctions import L1JointRegressionLoss_eth_code
-
+from source.lossfunctions.l1jointregressionloss import L1JointRegressionLoss_eth_code
+from source.lossfunctions.l1jointregressionloss import L1JointRegressionLoss
+from source.lossfunctions.l2jointheatmaploss import L2JointHeatmapLoss
 
 class LossFunctionFactory(object):
     model = False
@@ -27,12 +28,22 @@ class LossFunctionFactory(object):
         return L1JointRegressionLoss_eth_code(num_joints=Configuration.get('training.model.num_joints'), norm=cfg.norm)
 
     @staticmethod
+    def L1JointRegressionLoss(self, cfg):
+        return L1JointRegressionLoss()
+
+    @staticmethod
     def IntegralJointLocationLoss(self, cfg):
         return integral.get_loss_func(cfg)
 
     @staticmethod
+    def L2JointHeatMapLoss(self, cfg):
+        return L2JointHeatmapLoss()
+
+    @staticmethod
     def get_members():
         return {
-            'L1JointRegressionLoss': LossFunctionFactory.L1JointRegressionLoss_eth_code,
+            'L1JointRegressionLoss_eth_code': LossFunctionFactory.L1JointRegressionLoss_eth_code,
             'IntegralJointLocationLoss': LossFunctionFactory.IntegralJointLocationLoss,
+            'L1JointRegressionLoss': LossFunctionFactory.L1JointRegressionLoss,
+            'L2JointHeatMapLoss': LossFunctionFactory.L2JointHeatMapLoss
         }
