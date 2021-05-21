@@ -15,8 +15,8 @@ MPII_FLIP_PAIRS = [[0, 5], [1, 4], [2, 3], [10, 15], [11, 14], [12, 13]]
 class MPIIDataset(JointDataset):
     name = 'mpii'
 
-    def __init__(self, general_cfg, root, image_set, is_train):
-        super().__init__(general_cfg, root, image_set, is_train)
+    def __init__(self, general_cfg, is_train):
+        super().__init__(general_cfg, is_train)
 
         self.parent_ids = np.array(MPII_PARENT_IDS, dtype=np.int)
         self.flip_pairs = np.array(MPII_FLIP_PAIRS, dtype=np.int)

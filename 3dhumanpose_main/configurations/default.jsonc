@@ -5,13 +5,18 @@
         "log_file" : "logs.txt" //Name of the log file
     },
     "data_collection" : {
-        "dataset" : "h36m",
+        "dataset" : "mpii",
         "h36m_params" : {
-            "num_joints" : 17
+            "num_joints" : 17,
+            "train_set": "train",
+            "val_set": "val",
         },
-        "folder" : "../data/h36m",
-        "train_set": "train",
-        "val_set": "val",
+         "mpii_params" : {
+            "num_joints" : 16,
+            "train_set": "train",
+            "val_set": "valid",
+        },
+        "folder" : "../data",
         "z_weight" : 1.0,
         "image_size": [256, 256],
         "num_cams": 4,

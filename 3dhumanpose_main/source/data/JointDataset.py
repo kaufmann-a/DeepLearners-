@@ -1,3 +1,4 @@
+import os
 import logging
 import numpy as np
 from torch.utils.data import Dataset
@@ -46,7 +47,13 @@ H36M_TO_MPII_PERM = np.array([H36M_NAMES.index(h) for h in MPII_NAMES if h != ''
 
 
 class JointDataset(Dataset):
-    def __init__(self, general_cfg, root, image_set, is_train, num_joints):
+    def __init__(self, general_cfg, is_train):
+        dataset_params = getattr(general_cfg, str(general_cfg.dataset) + "_params")
+        if is_train:
+            image_set = dataset_params.train_set
+        else:
+            image_set = dataset_params.val_set
+
         """
 
         Args:
@@ -58,7 +65,7 @@ class JointDataset(Dataset):
         """
 
         self.cfg_general = general_cfg
-        self.root = root
+        self.root = os.path.join(general_cfg.folder, general_cfg.dataset)
         self.image_set = image_set
         self.is_train = is_train
 
@@ -79,7 +86,7 @@ class JointDataset(Dataset):
 
         self.db = []
 
-        self.num_joints = num_joints
+        self.num_joints = dataset_params.num_joints
 
     def generate_joint_location_label(self, patch_width, patch_height, joints, joints_vis):
         joints[:, 0] = joints[:, 0] / patch_width - 0.5
