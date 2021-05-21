@@ -6,6 +6,9 @@
     },
     "data_collection" : {
         "dataset" : "h36m",
+        "h36m_params" : {
+            "num_joints" : 17
+        },
         "folder" : "../data/h36m",
         "train_set": "train",
         "val_set": "val",

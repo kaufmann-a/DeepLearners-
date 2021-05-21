@@ -142,8 +142,8 @@ class ModelIntegralPoseRegression(BaseModel):
 
     def __init__(self, model_params, dataset_params):
         super().__init__()
-        resnet_params = eval("model_params." + str(model_params.resnet_model) + "_params")
-        dataset_specific_params = eval("dataset_params." + str(dataset_params.dataset) + "_params")
+        resnet_params = getattr(model_params, str(model_params.resnet_model) + "_params")
+        dataset_specific_params = getattr(dataset_params, str(dataset_params.dataset) + "_params")
 
         self.backbone = BackboneResNet(model_params.resnet_model)
 
