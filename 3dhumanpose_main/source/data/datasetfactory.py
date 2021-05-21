@@ -2,6 +2,8 @@ import glob
 # Load all models
 from os.path import dirname, basename, isfile
 
+import torch.utils.data
+
 from source.configuration import Configuration
 from source.exceptions.configurationerror import ConfigurationError
 from source.data.JointDataset import JointDataset
@@ -20,7 +22,9 @@ class DataSetFactory(object):
 
         all_datasets = JointDataset.__subclasses__()
         if dataset_cfg:
-            dataset = [m(general_cfg, is_train) for m in all_datasets if m.name.lower() == dataset_cfg.lower()]
+            dataset = [m(general_cfg, is_train) for m in all_datasets if m.name.lower() in [dataset.lower() for dataset in dataset_cfg]]
             if dataset and len(dataset) > 0:
-                return dataset[0]
+                return torch.utils.data.ConcatDataset(dataset)
+
+
         raise ConfigurationError('data_collection.dataset')

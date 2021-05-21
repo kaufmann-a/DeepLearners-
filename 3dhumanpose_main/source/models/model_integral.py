@@ -143,7 +143,11 @@ class ModelIntegralPoseRegression(BaseModel):
     def __init__(self, model_params, dataset_params):
         super().__init__()
         resnet_params = getattr(model_params, str(model_params.resnet_model) + "_params")
-        dataset_specific_params = getattr(dataset_params, str(dataset_params.dataset) + "_params")
+        dataset_specific_params = []
+        for dataset in range(len(dataset_params.dataset)):
+            dataset_specific_params.append(getattr(dataset_params, str(dataset_params.dataset[dataset]) + "_params"))
+
+        NUM_JOINTS = 18  # ToDo: What do we input here? Especially if we train with different datasets??
 
         self.backbone = BackboneResNet(model_params.resnet_model)
 
@@ -151,7 +155,7 @@ class ModelIntegralPoseRegression(BaseModel):
                                                  num_layers=model_params.num_deconv_layers,
                                                  num_filters=model_params.num_deconv_filters,
                                                  kernel_size=model_params.kernel_size,
-                                                 num_joints=dataset_specific_params.num_joints,
+                                                 num_joints=NUM_JOINTS,
                                                  depth_dim=model_params.depth_dim
                                                  )
         self.joint_regressor = JointIntegralRegressor()

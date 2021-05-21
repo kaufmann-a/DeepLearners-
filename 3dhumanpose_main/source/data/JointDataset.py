@@ -48,7 +48,7 @@ H36M_TO_MPII_PERM = np.array([H36M_NAMES.index(h) for h in MPII_NAMES if h != ''
 
 class JointDataset(Dataset):
     def __init__(self, general_cfg, is_train):
-        dataset_params = getattr(general_cfg, str(general_cfg.dataset) + "_params")
+        dataset_params = getattr(general_cfg, str(self.name) + "_params")
         if is_train:
             image_set = dataset_params.train_set
         else:
@@ -65,7 +65,7 @@ class JointDataset(Dataset):
         """
 
         self.cfg_general = general_cfg
-        self.root = os.path.join(general_cfg.folder, general_cfg.dataset)
+        self.root = os.path.join(general_cfg.folder, self.name)
         self.image_set = image_set
         self.is_train = is_train
 
