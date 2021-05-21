@@ -1,7 +1,9 @@
 import os
-import logging
+
 import numpy as np
 from torch.utils.data import Dataset
+
+from source.helpers.img_utils import get_single_patch_sample
 
 
 class JointDataset(Dataset):
@@ -34,16 +36,19 @@ class JointDataset(Dataset):
             general_cfg: the data collection configuration.
             is_train: True = Is training data set.
         """
-        dataset_params = getattr(general_cfg, str(self.name) + "_params")
+        self.dataset_params = getattr(general_cfg, str(self.name) + "_params")
         if is_train:
-            image_set = dataset_params.train_set
+            image_set = self.dataset_params.train_set
         else:
-            image_set = dataset_params.val_set
+            image_set = self.dataset_params.val_set
 
         self.cfg_general = general_cfg
         self.root = os.path.join(general_cfg.folder, self.name)
         self.image_set = image_set
         self.is_train = is_train
+
+        self.num_joints = self.dataset_params.num_joints
+        self.num_cams = self.dataset_params.num_cams
 
         self.patch_width = general_cfg.image_size[0]
         self.patch_height = general_cfg.image_size[1]
@@ -53,7 +58,6 @@ class JointDataset(Dataset):
 
         self.mean = np.array([123.675, 116.280, 103.530])
         self.std = np.array([58.395, 57.120, 57.375])
-        self.num_cams = general_cfg.num_cams
 
         self.label_func = self.get_label_func()
 
@@ -61,8 +65,6 @@ class JointDataset(Dataset):
         self.db_length = 0
 
         self.db = []
-
-        self.num_joints = dataset_params.num_joints
 
         self.actual_joints = {}
         self.u2a_mapping = {}
@@ -113,6 +115,45 @@ class JointDataset(Dataset):
 
     def __getitem__(self, idx):
         raise NotImplementedError
+
+    def get_data(self, the_db):
+        image_file = os.path.join(self.root, the_db['image'])
+
+        if 'cam' in the_db:
+            cam = the_db['cam']
+        else:
+            cam = None
+
+        if 'joints_3d_vis' in the_db.keys() and 'joints_3d' in the_db.keys():
+            joints = the_db['joints_3d'].copy()
+            joints_vis = the_db['joints_3d_vis'].copy()
+            joints_vis[:, 2] *= self.cfg_general.z_weight  # multiply the z axes of the visibility with z_weight
+        else:
+            joints = joints_vis = None
+
+        img_patch, label, label_weight = get_single_patch_sample(image_file,
+                                                                 the_db['center_x'], the_db['center_y'],
+                                                                 the_db['width'], the_db['height'],
+                                                                 self.patch_width, self.patch_height,
+                                                                 self.rect_3d_width, self.rect_3d_height,
+                                                                 self.mean, self.std, self.label_func,
+                                                                 joints=joints,
+                                                                 joints_vis=joints_vis)
+
+        meta = {
+            'image': image_file,
+            'center_x': the_db['center_x'],
+            'center_y': the_db['center_y'],
+            'width': the_db['width'],
+            'height': the_db['height'],
+            'R': cam.R if cam is not None else np.zeros((3, 3), dtype=np.float64),
+            'T': cam.T if cam is not None else np.zeros((3, 1), dtype=np.float64),
+            'f': cam.f if cam is not None else np.zeros((2, 1), dtype=np.float64),
+            'c': cam.c if cam is not None else np.zeros((2, 1), dtype=np.float64),
+            'projection_matrix': cam.projection_matrix if cam is not None else np.zeros((3, 4), dtype=np.float64)
+        }
+
+        return img_patch.astype(np.float32), label.astype(np.float32), label_weight.astype(np.float32), meta
 
     def evaluate(self, preds, save_path=None, debug=False):
         raise NotImplementedError

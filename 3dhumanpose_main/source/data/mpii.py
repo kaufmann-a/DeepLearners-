@@ -5,7 +5,6 @@ import os
 import numpy as np
 
 from source.data.JointDataset import JointDataset
-from source.helpers.img_utils import get_single_patch_sample
 from source.logcreator.logcreator import Logcreator
 
 MPII_PARENT_IDS = [1, 2, 6, 6, 3, 4, 6, 6, 7, 8, 11, 12, 7, 7, 13, 14]
@@ -41,7 +40,6 @@ class MPIIDataset(JointDataset):
         self.flip_pairs = np.array(MPII_FLIP_PAIRS, dtype=np.int)
 
         self.pixel_std = 200
-        self.num_cams = 1
 
         self.db = self._get_db()
 
@@ -54,45 +52,6 @@ class MPIIDataset(JointDataset):
     def __getitem__(self, idx):
         db_rec = copy.deepcopy(self.db[idx])
         return self.get_data(db_rec)
-
-    def get_data(self, the_db):
-        image_file = os.path.join(self.root, "images", the_db['image'])
-
-        if 'joints_3d_vis' in the_db.keys() and 'joints_3d' in the_db.keys():
-            joints = the_db['joints_3d'].copy()
-            joints_vis = the_db['joints_3d_vis'].copy()
-            joints_vis[:, 2] *= self.cfg_general.z_weight  # multiply the z axes of the visibility with z_weight
-        else:
-            joints = joints_vis = None
-
-        # TODO Clean up: add image transformations similar to get_single_patch_sample
-        #  maybe use this as inspiration: https://github.com/yihui-he/epipolar-transformers/tree/4da5cbca762aef6a89d37f889789f772b87d2688/data/datasets
-        width = the_db['width']
-        height = the_db['height']
-
-        img_patch, label, label_weight = get_single_patch_sample(image_file,
-                                                                 the_db['center_x'], the_db['center_y'],
-                                                                 width, height,
-                                                                 self.patch_width, self.patch_height,
-                                                                 self.rect_3d_width, self.rect_3d_height,
-                                                                 self.mean, self.std, self.label_func,
-                                                                 joints=joints,
-                                                                 joints_vis=joints_vis)
-
-        meta = {
-            'image': image_file,
-            'center_x': the_db['center_x'],
-            'center_y': the_db['center_y'],
-            'width': width,
-            'height': height,
-            'R': np.zeros((3, 3), dtype=np.float64),
-            'T': np.zeros((3, 1), dtype=np.float64),
-            'f': np.zeros((2, 1), dtype=np.float64),
-            'c': np.zeros((2, 1), dtype=np.float64),
-            'projection_matrix': np.zeros((3, 4), dtype=np.float64)
-        }
-
-        return img_patch.astype(np.float32), label.astype(np.float32), label_weight.astype(np.float32), meta
 
     def _get_db(self):
         """
@@ -152,7 +111,7 @@ class MPIIDataset(JointDataset):
                 joints_3d_vis[:, 1] = jts_vis[:]
 
             gt_db.append({
-                'image': a['image'],
+                'image': os.path.join("images", a['image']),
                 'center_x': np.asarray([c[0]]),  # convert to array such that it has the same format as h36m
                 'center_y': np.asarray([c[1]]),
                 'width': np.asarray([width]),

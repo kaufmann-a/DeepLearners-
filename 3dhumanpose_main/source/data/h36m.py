@@ -7,7 +7,6 @@ import numpy as np
 
 import source.helpers.cameras
 from source.data.JointDataset import JointDataset
-from source.helpers.img_utils import get_single_patch_sample
 from source.logcreator.logcreator import Logcreator
 
 # TODO get rid of this list
@@ -98,44 +97,6 @@ class H36M(JointDataset):
         db_rec = copy.deepcopy(self.db[idx])
         return self.get_data(db_rec)
 
-    def get_data(self, the_db):
-        # check that it really is h36m, because all if statements in function checking h36m were removed
-        assert the_db['is_h36m']  # TODO attribute is_h36m can be removed if everything works as expected
-
-        image_file = os.path.join(self.root, the_db['image'])
-        cam = the_db['cam']
-
-        if 'joints_3d_vis' in the_db.keys() and 'joints_3d' in the_db.keys():
-            joints = the_db['joints_3d'].copy()
-            joints_vis = the_db['joints_3d_vis'].copy()
-            joints_vis[:, 2] *= self.cfg_general.z_weight  # multiply the z axes of the visibility with z_weight
-        else:
-            joints = joints_vis = None
-
-        img_patch, label, label_weight = get_single_patch_sample(image_file, the_db['center_x'],
-                                                                 the_db['center_y'], the_db['width'],
-                                                                 the_db['height'],
-                                                                 self.patch_width, self.patch_height,
-                                                                 self.rect_3d_width, self.rect_3d_height,
-                                                                 self.mean, self.std, self.label_func,
-                                                                 joints=joints,
-                                                                 joints_vis=joints_vis)
-
-        meta = {
-            'image': image_file,
-            'center_x': the_db['center_x'],
-            'center_y': the_db['center_y'],
-            'width': the_db['width'],
-            'height': the_db['height'],
-            'R': cam.R if cam is not None else np.zeros((3, 3), dtype=np.float64),
-            'T': cam.T if cam is not None else np.zeros((3, 1), dtype=np.float64),
-            'f': cam.f if cam is not None else np.zeros((2, 1), dtype=np.float64),
-            'c': cam.c if cam is not None else np.zeros((2, 1), dtype=np.float64),
-            'projection_matrix': cam.projection_matrix if cam is not None else np.zeros((3, 4), dtype=np.float64)
-        }
-
-        return img_patch.astype(np.float32), label.astype(np.float32), label_weight.astype(np.float32), meta
-
     def _get_db(self):
         gt_db = self._get_h36m_db()
 
@@ -153,7 +114,7 @@ class H36M(JointDataset):
             for idx in range(len(anno[1])):
                 for cid in range(self.num_cams):
                     a = anno[cid + 1][idx]
-                    a['is_h36m'] = True
+                    a['is_h36m'] = True  # TODO can be removed, except if we want to know the source somewhere later
                     gt_db[cid].append(a)
 
             # convert the database/list per camera back to one single list -> we do not use multi view
