@@ -18,7 +18,7 @@ class DataSetFactory(object):
     def load(general_cfg, dataset_folder, image_set, is_train):
         dataset_cfg = general_cfg.dataset
         
-        dataset_params = eval("Configuration." + dataset_cfg + "_params")
+        dataset_params = getattr(general_cfg, dataset_cfg + "_params")
 
         all_datasets = JointDataset.__subclasses__()
         if dataset_cfg:
