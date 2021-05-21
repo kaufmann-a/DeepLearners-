@@ -13,28 +13,27 @@ MPII_FLIP_PAIRS = [[0, 5], [1, 4], [2, 3], [10, 15], [11, 14], [12, 13]]
 
 class MPIIDataset(JointDataset):
     name = 'mpii'
+    actual_joints = {
+        0: 'RFoot',
+        1: 'RKnee',
+        2: 'RHip',
+        3: 'LHip',
+        4: 'LKnee',
+        5: 'LFoot',
+        6: 'Hip',
+        7: 'Thorax',
+        8: 'Neck/Nose',
+        9: 'Head',
+        10: 'RWrist',
+        11: 'RElbow',
+        12: 'RShoulder',
+        13: 'LShoulder',
+        14: 'LElbow',
+        15: 'LWrist'
+    }
 
     def __init__(self, general_cfg, is_train):
         super().__init__(general_cfg, is_train)
-
-        self.actual_joints = {
-            0: 'RFoot',
-            1: 'RKnee',
-            2: 'RHip',
-            3: 'LHip',
-            4: 'LKnee',
-            5: 'LFoot',
-            6: 'Hip',
-            7: 'Thorax',
-            8: 'Neck/Nose',
-            9: 'Head',
-            10: 'RWrist',
-            11: 'RElbow',
-            12: 'RShoulder',
-            13: 'LShoulder',
-            14: 'LElbow',
-            15: 'LWrist'
-        }
 
         self.parent_ids = np.array(MPII_PARENT_IDS, dtype=np.int)
         self.flip_pairs = np.array(MPII_FLIP_PAIRS, dtype=np.int)
@@ -44,8 +43,8 @@ class MPIIDataset(JointDataset):
         self.db = self._get_db()
 
         # map joint index to the unified index
-        self.u2a_mapping = super().get_joint_mapping()
-        super().do_joint_mapping()
+        self.u2a_mapping = super().get_joint_mapping(self.actual_joints)
+        super().do_joint_mapping(self.u2a_mapping)
 
         Logcreator.info('=> load {} samples'.format(self.db_length))
 

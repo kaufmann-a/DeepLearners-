@@ -66,22 +66,18 @@ class JointDataset(Dataset):
 
         self.db = []
 
-        self.actual_joints = {}
-        self.u2a_mapping = {}
-
-    def get_joint_mapping(self):
+    def get_joint_mapping(self, actual_joints):
         union_keys = list(self.union_joints.keys())
         union_values = list(self.union_joints.values())
 
         mapping = {k: '*' for k in union_keys}
-        for k, v in self.actual_joints.items():
+        for k, v in actual_joints.items():
             idx = union_values.index(v)
             key = union_keys[idx]
             mapping[key] = k
         return mapping
 
-    def do_joint_mapping(self):
-        mapping = self.u2a_mapping
+    def do_joint_mapping(self, mapping):
         for item in self.db:
             joints = item['joints_3d']
             joints_vis = item['joints_3d_vis']

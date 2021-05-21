@@ -9,45 +9,6 @@ import source.helpers.cameras
 from source.data.JointDataset import JointDataset
 from source.logcreator.logcreator import Logcreator
 
-# TODO get rid of this list
-H36M_NAMES = [''] * 17
-H36M_NAMES[0] = 'Hip'
-H36M_NAMES[1] = 'RHip'
-H36M_NAMES[2] = 'RKnee'
-H36M_NAMES[3] = 'RFoot'
-H36M_NAMES[4] = 'LHip'
-H36M_NAMES[5] = 'LKnee'
-H36M_NAMES[6] = 'LFoot'
-H36M_NAMES[7] = 'Spine'
-H36M_NAMES[8] = 'Thorax'
-H36M_NAMES[9] = 'Neck/Nose'
-H36M_NAMES[10] = 'Head'
-H36M_NAMES[11] = 'LShoulder'
-H36M_NAMES[12] = 'LElbow'
-H36M_NAMES[13] = 'LWrist'
-H36M_NAMES[14] = 'RShoulder'
-H36M_NAMES[15] = 'RElbow'
-H36M_NAMES[16] = 'RWrist'
-
-header_pred = 'Id,'
-header_gt = 'Id,'
-for idx, name in enumerate(H36M_NAMES):
-    header_pred += name + '_x,'
-    header_pred += name + '_y,'
-    header_pred += name + '_z'
-
-    if idx < len(H36M_NAMES) - 1:
-        header_pred += ','
-
-    header_gt += name + '_x_gt,'
-    header_gt += name + '_y_gt,'
-    header_gt += name + '_z_gt,'
-
-header_gt += 'Split'
-
-fmt_pred = ['%d'] + ['%.4f'] * 51
-fmt_gt = ['%d'] + ['%.4f'] * 51 + ['%d']
-
 
 def CamBackProj(cam_x, cam_y, depth, fx, fy, u, v):
     x = (cam_x - u) / fx * depth
@@ -58,38 +19,39 @@ def CamBackProj(cam_x, cam_y, depth, fx, fy, u, v):
 
 class H36M(JointDataset):
     name = 'h36m'
+    actual_joints = {
+        0: 'Hip',
+        1: 'RHip',
+        2: 'RKnee',
+        3: 'RFoot',
+        4: 'LHip',
+        5: 'LKnee',
+        6: 'LFoot',
+        7: 'Spine',
+        8: 'Thorax',
+        9: 'Neck/Nose',
+        10: 'Head',
+        11: 'LShoulder',
+        12: 'LElbow',
+        13: 'LWrist',
+        14: 'RShoulder',
+        15: 'RElbow',
+        16: 'RWrist',
+    }
 
     def __init__(self, general_cfg, is_train):
         super().__init__(general_cfg, is_train)
 
-        self.actual_joints = {
-            0: 'Hip',
-            1: 'RHip',
-            2: 'RKnee',
-            3: 'RFoot',
-            4: 'LHip',
-            5: 'LKnee',
-            6: 'LFoot',
-            7: 'Spine',
-            8: 'Thorax',
-            9: 'Neck/Nose',
-            10: 'Head',
-            11: 'LShoulder',
-            12: 'LElbow',
-            13: 'LWrist',
-            14: 'RShoulder',
-            15: 'RElbow',
-            16: 'RWrist',
-        }
-
         self.parent_ids = np.array([0, 0, 1, 2, 0, 4, 5, 0, 8, 8, 9, 8, 11, 12, 8, 14, 15], dtype=np.int)
         self.flip_pairs = np.array([[1, 4], [2, 5], [3, 6], [14, 11], [15, 12], [16, 13]], dtype=np.int)
+
+        self.header_pred, self.header_gt, self.fmt_pred, self.fmt_gt = self.get_save_values()
 
         self.db = self._get_db()
 
         # map joint index to the unified index
-        self.u2a_mapping = super().get_joint_mapping()
-        super().do_joint_mapping()
+        self.u2a_mapping = super().get_joint_mapping(self.actual_joints)
+        super().do_joint_mapping(self.u2a_mapping)
 
         Logcreator.info('=> load {} samples'.format(self.db_length))
 
@@ -155,6 +117,29 @@ class H36M(JointDataset):
             anno = pkl.load(anno_file)
 
         return anno
+
+    def get_save_values(self):
+        header_pred = 'Id,'
+        header_gt = 'Id,'
+        h36m_names = self.union_joints.values()
+        for idx, name in enumerate(h36m_names):
+            header_pred += name + '_x,'
+            header_pred += name + '_y,'
+            header_pred += name + '_z'
+
+            if idx < len(h36m_names) - 1:
+                header_pred += ','
+
+            header_gt += name + '_x_gt,'
+            header_gt += name + '_y_gt,'
+            header_gt += name + '_z_gt,'
+
+        header_gt += 'Split'
+
+        fmt_pred = ['%d'] + ['%.4f'] * 51
+        fmt_gt = ['%d'] + ['%.4f'] * 51 + ['%d']
+
+        return header_pred, header_gt, fmt_pred, fmt_gt
 
     def evaluate(self, preds, save_path=None, debug=False, writer_dict=None):
         preds = preds[:, :, 0:3]
@@ -336,10 +321,9 @@ class H36M(JointDataset):
 
         if has_gt:
             per_joint_error = np.array(dist_per_joint).mean(axis=0).tolist()
-            joint_names = H36M_NAMES
 
-            for idx in range(len(joint_names)):
-                Logcreator.info(joint_names[idx], per_joint_error[idx])
+            for idx, name in enumerate(self.union_joints.values()):
+                Logcreator.info(name, per_joint_error[idx])
 
             name_value = [
                 ('hm36_17j      :', np.asarray(dist).mean()),
@@ -354,10 +338,11 @@ class H36M(JointDataset):
         if save_path is not None:
             pred_save_path = os.path.join(save_path, '{}_pred.csv'.format(self.image_set))
             pred_to_save = np.stack(pred_to_save, axis=0)
-            np.savetxt(pred_save_path, pred_to_save, delimiter=',', header=header_pred, fmt=fmt_pred, comments='')
+            np.savetxt(pred_save_path, pred_to_save, delimiter=',', header=self.header_pred, fmt=self.fmt_pred,
+                       comments='')
             if has_gt:
                 gt_save_path = os.path.join(save_path, '{}_gt.csv'.format(self.image_set))
                 gt_to_save = np.stack(gt_to_save, axis=0)
-                np.savetxt(gt_save_path, gt_to_save, delimiter=',', header=header_gt, fmt=fmt_gt, comments='')
+                np.savetxt(gt_save_path, gt_to_save, delimiter=',', header=self.header_gt, fmt=self.fmt_gt, comments='')
 
         return name_value, np.asarray(dist).mean()
