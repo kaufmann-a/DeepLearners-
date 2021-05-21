@@ -154,10 +154,10 @@ class MPIIDataset(JointDataset):
 
             gt_db.append({
                 'image': a['image'],
-                'center_x': c[0],
-                'center_y': c[1],
-                'width': width,
-                'height': height,
+                'center_x': np.asarray([c[0]]),  # convert to array such that it has the same format as h36m
+                'center_y': np.asarray([c[1]]),
+                'width': np.asarray([width]),
+                'height': np.asarray([height]),
                 'flip_pairs': self.flip_pairs,
                 'parent_ids': self.parent_ids,
                 'joints_3d': joints_3d,
