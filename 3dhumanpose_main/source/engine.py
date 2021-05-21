@@ -289,40 +289,47 @@ class Engine:
 
     def evaluate(self, epoch, preds_in_patch_with_score, val_loader, final_output_path, debug=False, writer_dict=None):
         print("Evaluation step")
-        # From patch to original image coordinate system
-        imdb_list = val_loader.dataset.db
-        imdb = val_loader.dataset
 
-        preds_in_img_with_score = []
+        # TODO also evaluate on mpii?
+        for image_set in val_loader.dataset.datasets:  # iterate through all datasets
+            if image_set.name == "h36m":  # evaluate on h36m
+                imdb_list = image_set.db
+                imdb = val_loader.dataset
 
-        for n_sample in range(len(val_loader.dataset)):
-            preds_in_img_with_score.append(
-                trans_coords_from_patch_to_org_3d(preds_in_patch_with_score[n_sample], imdb_list[n_sample]['center_x'],
-                                                  imdb_list[n_sample]['center_y'], imdb_list[n_sample]['width'],
-                                                  imdb_list[n_sample]['height'], 256, 256,
-                                                  2000, 2000))
+                # From patch to original image coordinate system
+                preds_in_img_with_score = []
 
-        preds_in_img_with_score = np.asarray(preds_in_img_with_score)
+                for n_sample in range(len(val_loader.dataset)):
+                    preds_in_img_with_score.append(
+                        trans_coords_from_patch_to_org_3d(preds_in_patch_with_score[n_sample],
+                                                          imdb_list[n_sample]['center_x'],
+                                                          imdb_list[n_sample]['center_y'], imdb_list[n_sample]['width'],
+                                                          imdb_list[n_sample]['height'], 256, 256,
+                                                          2000, 2000))
 
-        # Evaluate
-        if 'joints_3d' in imdb.db[0].keys():
-            name_value, perf = imdb.evaluate(preds_in_img_with_score.copy(), final_output_path,
-                                             debug=debug,
-                                             writer_dict=writer_dict)
-            for name, value in name_value:
-                Logcreator.info(f'Epoch[{epoch}] Validation-{name} {value}')
-        else:
-            Logcreator.info('Test set is used, saving results to %s', final_output_path)
-            _, perf = imdb.evaluate(preds_in_img_with_score.copy(), final_output_path,
-                                    debug=debug,
-                                    writer_dict=writer_dict)
-            perf = 0.0
+                preds_in_img_with_score = np.asarray(preds_in_img_with_score)
 
-        Logcreator.info("Mean per joint position error", perf)
+                # Evaluate
+                if 'joints_3d' in imdb.db[0].keys():
+                    name_value, perf = imdb.evaluate(preds_in_img_with_score.copy(), final_output_path,
+                                                     debug=debug,
+                                                     writer_dict=writer_dict)
+                    for name, value in name_value:
+                        Logcreator.info(f'Epoch[{epoch}] Validation-{name} {value}')
+                else:
+                    Logcreator.info('Test set is used, saving results to %s', final_output_path)
+                    _, perf = imdb.evaluate(preds_in_img_with_score.copy(), final_output_path,
+                                            debug=debug,
+                                            writer_dict=writer_dict)
+                    perf = 0.0
 
-        self.writer.add_scalar("MPJPE/val", perf, epoch)
+                Logcreator.info("Mean per joint position error", perf)
 
-        return perf
+                self.writer.add_scalar("MPJPE/val", perf, epoch)
+
+                return perf
+
+        return 0.0
 
     def save_model(self, epoch_nr):
         """ This function saves entire model incl. modelstructure"""
