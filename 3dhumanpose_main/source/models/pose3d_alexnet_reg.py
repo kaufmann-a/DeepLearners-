@@ -8,7 +8,7 @@ from source.logcreator.logcreator import Logcreator
 class PoseAlexNetReg(BaseModel):
     name = 'PoseAlexNetReg'
 
-    def __init__(self, cfg, **kwargs):
+    def __init__(self, model_params, dataset_params):
         super(PoseAlexNetReg, self).__init__()
         self.features = nn.Sequential(
             nn.Conv2d(3, 64, kernel_size=11, stride=4, padding=2),
@@ -33,7 +33,7 @@ class PoseAlexNetReg(BaseModel):
             nn.Dropout(),
             nn.Linear(4096, 4096),
             nn.ReLU(inplace=True),
-            nn.Linear(4096, cfg.num_joints * 3),
+            nn.Linear(4096, model_params.num_joints * 3),
         )
 
     def forward(self, x):
