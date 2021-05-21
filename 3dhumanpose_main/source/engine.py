@@ -294,12 +294,12 @@ class Engine:
         for image_set in val_loader.dataset.datasets:  # iterate through all datasets
             if image_set.name == "h36m":  # evaluate on h36m
                 imdb_list = image_set.db
-                imdb = val_loader.dataset
+                imdb = image_set
 
                 # From patch to original image coordinate system
                 preds_in_img_with_score = []
 
-                for n_sample in range(len(val_loader.dataset)):
+                for n_sample in range(len(image_set)):
                     preds_in_img_with_score.append(
                         trans_coords_from_patch_to_org_3d(preds_in_patch_with_score[n_sample],
                                                           imdb_list[n_sample]['center_x'],
