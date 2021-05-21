@@ -17,8 +17,6 @@
             "val_set": "valid",
         },
         "folder" : "../data",
-        "train_set": "train",
-        "val_set": "val",
         "z_weight" : 1.0,
         "image_size": [256, 256],
         "num_cams": 4,
@@ -33,6 +31,7 @@
         },
         "model": {
             "name": "PoseAlexNetReg",
+            "num_joints" : 17,
         },
         "optimizer": {
             "name": "adam",
@@ -41,7 +40,7 @@
             "beta2": 0.999
         },
         "loss": {
-            "loss_function": "L1JointRegressionLoss",
+            "loss_function": "L1JointRegressionLoss_eth_code",
             "norm" : false,
             "loss_type": "L1",
             "output_3d": true,
