@@ -11,29 +11,6 @@ from source.logcreator.logcreator import Logcreator
 MPII_PARENT_IDS = [1, 2, 6, 6, 3, 4, 6, 6, 7, 8, 11, 12, 7, 7, 13, 14]
 MPII_FLIP_PAIRS = [[0, 5], [1, 4], [2, 3], [10, 15], [11, 14], [12, 13]]
 
-s_mpii_2_hm36_jt = [6, 2, 1, 0, 3, 4, 5, -1, 8, -1, 9, 13, 14, 15, 12, 11, 10, 7]
-s_36_jt_num = 18
-
-
-def from_mpii_to_hm36_single(pose, pose_vis):
-    res_jts = np.zeros((s_36_jt_num, 3), dtype=np.float)
-    res_vis = np.zeros((s_36_jt_num, 3), dtype=np.float)
-
-    for i in range(0, s_36_jt_num):
-        id1 = i
-        id2 = s_mpii_2_hm36_jt[i]
-        if id2 >= 0:
-            res_jts[id1] = pose[id2].copy()
-            res_vis[id1] = pose_vis[id2].copy()
-
-    return res_jts.copy(), res_vis.copy()
-
-
-def from_mpii_to_hm36(db):
-    for n_sample in range(0, len(db)):
-        res_jts, res_vis = from_mpii_to_hm36_single(db[n_sample]['joints_3d'], db[n_sample]['joints_3d_vis'])
-        db[n_sample]['joints_3d'] = res_jts
-        db[n_sample]['joints_3d_vis'] = res_vis
 
 class MPIIDataset(JointDataset):
     name = 'mpii'
@@ -41,14 +18,36 @@ class MPIIDataset(JointDataset):
     def __init__(self, general_cfg, is_train):
         super().__init__(general_cfg, is_train)
 
+        self.actual_joints = {
+            0: 'RFoot',
+            1: 'RKnee',
+            2: 'RHip',
+            3: 'LHip',
+            4: 'LKnee',
+            5: 'LFoot',
+            6: 'Hip',
+            7: 'Thorax',
+            8: 'Neck/Nose',
+            9: 'Head',
+            10: 'RWrist',
+            11: 'RElbow',
+            12: 'RShoulder',
+            13: 'LShoulder',
+            14: 'LElbow',
+            15: 'LWrist'
+        }
+
         self.parent_ids = np.array(MPII_PARENT_IDS, dtype=np.int)
         self.flip_pairs = np.array(MPII_FLIP_PAIRS, dtype=np.int)
 
-        self.num_joints = 16
-
+        self.pixel_std = 200
         self.num_cams = 1
 
         self.db = self._get_db()
+
+        # map joint index to the unified index
+        self.u2a_mapping = super().get_joint_mapping()
+        super().do_joint_mapping()
 
         Logcreator.info('=> load {} samples'.format(self.db_length))
 
@@ -66,7 +65,7 @@ class MPIIDataset(JointDataset):
         else:
             joints = joints_vis = None
 
-        # TODO add image transformations similar to get_single_patch_sample
+        # TODO Clean up: add image transformations similar to get_single_patch_sample
         #  maybe use this as inspiration: https://github.com/yihui-he/epipolar-transformers/tree/4da5cbca762aef6a89d37f889789f772b87d2688/data/datasets
         width = the_db['width']
         height = the_db['height']
@@ -168,8 +167,6 @@ class MPIIDataset(JointDataset):
         # update the length of the data base
         self.db_length = len(gt_db)
 
-        from_mpii_to_hm36(gt_db)
-
         return gt_db
 
     def read_annotation_file(self):
@@ -180,6 +177,6 @@ class MPIIDataset(JointDataset):
             annotations = json.load(anno_file)
         return annotations
 
-    def evaluate(self, preds, save_path=None, debug=False):
+    def evaluate(self, preds, save_path=None, debug=False, writer_dict=None):
         # TODO Do we want to evaluate it or only use it as gradient info.
         pass

@@ -10,6 +10,7 @@ from source.data.JointDataset import JointDataset
 from source.helpers.img_utils import get_single_patch_sample
 from source.logcreator.logcreator import Logcreator
 
+# TODO get rid of this list
 H36M_NAMES = [''] * 17
 H36M_NAMES[0] = 'Hip'
 H36M_NAMES[1] = 'RHip'
@@ -62,10 +63,34 @@ class H36M(JointDataset):
     def __init__(self, general_cfg, is_train):
         super().__init__(general_cfg, is_train)
 
+        self.actual_joints = {
+            0: 'Hip',
+            1: 'RHip',
+            2: 'RKnee',
+            3: 'RFoot',
+            4: 'LHip',
+            5: 'LKnee',
+            6: 'LFoot',
+            7: 'Spine',
+            8: 'Thorax',
+            9: 'Neck/Nose',
+            10: 'Head',
+            11: 'LShoulder',
+            12: 'LElbow',
+            13: 'LWrist',
+            14: 'RShoulder',
+            15: 'RElbow',
+            16: 'RWrist',
+        }
+
         self.parent_ids = np.array([0, 0, 1, 2, 0, 4, 5, 0, 8, 8, 9, 8, 11, 12, 8, 14, 15], dtype=np.int)
         self.flip_pairs = np.array([[1, 4], [2, 5], [3, 6], [14, 11], [15, 12], [16, 13]], dtype=np.int)
 
         self.db = self._get_db()
+
+        # map joint index to the unified index
+        self.u2a_mapping = super().get_joint_mapping()
+        super().do_joint_mapping()
 
         Logcreator.info('=> load {} samples'.format(self.db_length))
 
