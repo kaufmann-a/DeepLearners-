@@ -61,6 +61,10 @@ class Engine:
         # Print model summary
         self.print_modelsummary()
 
+        # Log used device
+        Logcreator.info("Following device will be used for training: " + DEVICE,
+                        torch.cuda.get_device_name(0) if torch.cuda.is_available() else "")
+
     def fix_random_seeds(self, seed):
         torch.manual_seed(seed)
         np.random.seed(seed)

@@ -7,11 +7,7 @@ __email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, kbouchiat@stu
 
 import argparse
 import os
-import random
 import time
-
-import numpy
-import torch
 
 from source.configuration import Configuration
 from source.engine import Engine
@@ -37,10 +33,6 @@ if __name__ == "__main__":
 
     Logcreator.h1("Some title")
     Logcreator.info("Environment: %s" % Configuration.get('environment.name'))
-
-    # log used gpu device
-    if torch.cuda.is_available():
-        Logcreator.info(torch.cuda.get_device_name(0))
 
     engine = Engine()
 
