@@ -42,9 +42,11 @@ class MPIIDataset(JointDataset):
 
         self.db = self._get_db()
 
-        # map joint index to the unified index
+        # get joint index to the unified index map
         self.u2a_mapping = super().get_joint_mapping(self.actual_joints)
-        super().do_joint_mapping(self.u2a_mapping)
+        if self.image_set != 'test':
+            # do mapping of the labels
+            super().do_joint_mapping(self.u2a_mapping)
 
         Logcreator.info('=> load {} samples'.format(self.db_length))
 
