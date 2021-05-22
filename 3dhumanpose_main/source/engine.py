@@ -375,6 +375,7 @@ class Engine:
         }, os.path.join(Configuration.weights_save_folder, file_name))
 
     def load_checkpoints(self, path=None):
+        Logcreator.info("Loading checkpoint file:", path)
         checkpoint = torch.load(path)
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
