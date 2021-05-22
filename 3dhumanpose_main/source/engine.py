@@ -12,12 +12,15 @@ import os
 import sys
 
 import time
+import random
+from io import StringIO
+
 import numpy as np
 import torch
 # import torchmetrics as torchmetrics
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
-# from torchsummary import summary
+from torchsummary import summary
 from tqdm import tqdm
 
 from source.configuration import Configuration
@@ -39,6 +42,10 @@ DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 class Engine:
 
     def __init__(self):
+        # fix random seeds
+        seed = 49626446
+        self.fix_random_seeds(seed)
+
         self.model = ModelFactory.build().to(DEVICE)
         self.optimizer = OptimizerFactory.build(self.model)
         self.lr_scheduler = LRSchedulerFactory.build(self.optimizer)
@@ -52,11 +59,12 @@ class Engine:
         self.writer = SummaryWriter(log_dir=Configuration.tensorboard_folder)
 
         # Print model summary
-        # Logcreator.info(summary(self.model, input_size=input_size, device=DEVICE))
+        self.print_modelsummary()
 
-        # Logcreator.debug("Model '%s' initialized with %d parameters." %
-        #                  (Configuration.get('training.model.name'),
-        #                   sum(p.numel() for p in self.model.parameters() if p.requires_grad)))
+    def fix_random_seeds(self, seed):
+        torch.manual_seed(seed)
+        np.random.seed(seed)
+        random.seed(seed)
 
     def train(self, epoch_nr=0):
         train_dataset = DataSetFactory.load(Configuration.get('data_collection'),
@@ -366,3 +374,17 @@ class Engine:
         print("Total model parameters: {:.2f}M".format(sum(p.numel() for p in self.model.parameters()) / 1000000.0))
 
         return epoch, train_loss, val_loss
+
+    def print_modelsummary(self):
+        image_size = Configuration.get("data_collection.image_size")
+        input_size = tuple(np.insert(image_size, 0, values=3))
+        # redirect stdout to our logger
+        sys.stdout = my_stdout = StringIO()
+        summary(self.model, input_size=input_size, device=DEVICE)
+        # reset stdout to original
+        sys.stdout = sys.__stdout__
+        Logcreator.info(my_stdout.getvalue())
+
+        Logcreator.debug("Model '%s' initialized with %d parameters." %
+                         (Configuration.get('training.model.name'),
+                          sum(p.numel() for p in self.model.parameters() if p.requires_grad)))
