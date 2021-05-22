@@ -73,6 +73,11 @@ class MPIIDataset(JointDataset):
             c = np.array(a['center'], dtype=np.float)
             s = np.array([a['scale'], a['scale']], dtype=np.float)  # 2d array with individual scale for x and y
 
+            if c[0] < 1:  # if the center is smaller we skip the image # TODO is this the correct thing to do?
+                if False:
+                    print(c)
+                continue
+
             # TODO Ask on piazza if the following argumentations are already done to the mpii data that was
             #  supplied by eth
 
@@ -83,7 +88,6 @@ class MPIIDataset(JointDataset):
                 s = s * 1.25  # increase the scaling
 
             # MPII uses matlab format, index is based 1 -> convert it to 0-based index
-            assert c[0] >= 1  # checks for matlab format?
             c = c - 1
 
             width = s[0]

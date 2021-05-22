@@ -30,7 +30,7 @@ class JointDataset(Dataset):
 
     def __init__(self, general_cfg, is_train):
         """
-        Based on: https://github.com/yihui-he/epipolar-transformers/blob/4da5cbca762aef6a89d37f889789f772b87d2688/data/datasets/joints_dataset.py#L131
+        Based on: https://github.com/yihui-he/epipolar-transformers/blob/4da5cbca762aef6a89d37f889789f772b87d2688/data/datasets/joints_dataset.py
 
         Args:
             general_cfg: the data collection configuration.
