@@ -264,11 +264,13 @@ class Engine:
 
                 del batch_data, batch_label, batch_label_weight
 
-                preds_in_patch_with_score.append(result_func(patch_width=256, patch_height=256, preds=predictions))
+                preds_in_patch_with_score.append(result_func(patch_width=256, patch_height=256,
+                                                             preds=predictions))  # TODO understand result_func and maybe refactor it
                 del predictions
 
             loop.close()
 
+            # TODO This line causes "VisibleDeprecationWarning" (see TODO below)
             _p = np.asarray(preds_in_patch_with_score)
 
             # Dirty solution for partial batches
@@ -286,6 +288,11 @@ class Engine:
                 _p = tp
             else:
                 _p = _p.reshape((_p.shape[0] * _p.shape[1], _p.shape[2], _p.shape[3]))
+
+            # TODO Understand how we use preds_in_patch_with_score and why code above is needed or not needed
+            #  Following code with np.vstack works, as a replacement of all the code above (but does it work in every case?):
+            # _test = np.vstack(preds_in_patch_with_score)
+            # assert(np.equal(_test, _p[0: len(data_loader.dataset)]).all())
 
             preds_in_patch_with_score = _p[0: len(data_loader.dataset)]
 
@@ -312,6 +319,8 @@ class Engine:
                 preds_in_img_with_score = []
 
                 for n_sample in range(len(image_set)):
+                    # TODO we not neccessaraly pick the "preds_in_patch_with_score[n_sample]" of the h36m set (could also be the mpii),
+                    #  it depends on the order of the paramter "dataset" : ["h36m", "mpii"] in the config file
                     preds_in_img_with_score.append(
                         trans_coords_from_patch_to_org_3d(preds_in_patch_with_score[n_sample],
                                                           imdb_list[n_sample]['center_x'],
