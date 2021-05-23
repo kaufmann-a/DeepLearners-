@@ -37,7 +37,7 @@ if __name__ == "__main__":
     engine = Engine()
 
     if args.weights:
-        epoch, train_loss, train_acc, val_loss, val_acc = engine.load_checkpoints(args.weights)
+        epoch, train_loss, val_loss = engine.load_checkpoints(args.weights)
         engine.train(epoch)
     else:
         engine.train()

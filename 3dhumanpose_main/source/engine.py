@@ -70,6 +70,9 @@ class Engine:
         np.random.seed(seed)
         random.seed(seed)
 
+    def get_lr(self):
+        return self.optimizer.param_groups[0]['lr']
+
     def train(self, epoch_nr=0):
         train_dataset = DataSetFactory.load(Configuration.get('data_collection'),
                                             is_train=True)
@@ -102,7 +105,7 @@ class Engine:
 
         best_perf = 0.0
         while epoch < train_parms.num_epochs:
-            Logcreator.info(f"Epoch {epoch}")
+            Logcreator.info(f"Epoch {epoch}, lr: {self.get_lr():.3e}, lr-step: {self.lr_scheduler.last_epoch}")
 
             train_loss = self.train_step(train_loader, epoch)
 
