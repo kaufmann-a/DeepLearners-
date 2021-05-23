@@ -18,7 +18,7 @@ def get_affine_transform(center,
     dst_h = output_size[1]
 
     rot_rad = np.pi * rot / 180
-    src_dir = get_dir([0, src_w * -0.5], rot_rad)
+    src_dir = get_2d_rotation([0, src_w * -0.5], rot_rad)
     dst_dir = np.array([0, dst_w * -0.5], np.float32)
 
     src = np.zeros((3, 2), dtype=np.float32)
@@ -44,7 +44,17 @@ def get_3rd_point(a, b):
     return b + np.array([-direct[1], direct[0]], dtype=np.float32)
 
 
-def get_dir(src_point, rot_rad):
+def get_2d_rotation(src_point, rot_rad):
+    """
+    2d rotation of a point given a rotation radius.
+
+    Args:
+        src_point: 2d point (x,y)
+        rot_rad: the rotation radius
+
+    Returns: rotated point
+
+    """
     sn, cs = np.sin(rot_rad), np.cos(rot_rad)
 
     src_result = [0, 0]

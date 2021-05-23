@@ -7,6 +7,12 @@
     "data_collection" : {
         "folder" : "../data",
         "dataset" : ["h36m", "mpii"],
+        "augmentations" : {
+            "scale_factor" : 0.25,
+            "rotation_factor" : 30,
+            "color_factor": 0.2,
+            "random_flip" : true,
+        },
         "h36m_params" : {
             "train_set": "train",
             "val_set": "val",

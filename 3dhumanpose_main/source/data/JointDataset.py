@@ -43,6 +43,8 @@ class JointDataset(Dataset):
             image_set = self.dataset_params.val_set
 
         self.cfg_general = general_cfg
+        self.augmentations = self.cfg_general.augmentations
+
         self.root = os.path.join(general_cfg.folder, self.name)
         self.image_set = image_set
         self.is_train = is_train
@@ -62,6 +64,8 @@ class JointDataset(Dataset):
         self.label_func = self.get_label_func()
 
         self.parent_ids = None
+        self.flip_pairs = None
+
         self.db_length = 0
 
         self.db = []
@@ -133,6 +137,9 @@ class JointDataset(Dataset):
                                                                  self.patch_width, self.patch_height,
                                                                  self.rect_3d_width, self.rect_3d_height,
                                                                  self.mean, self.std, self.label_func,
+                                                                 joint_flip_pairs=self.flip_pairs,
+                                                                 apply_augmentations=self.is_train,
+                                                                 augmentation_config=self.augmentations,
                                                                  joints=joints,
                                                                  joints_vis=joints_vis)
 

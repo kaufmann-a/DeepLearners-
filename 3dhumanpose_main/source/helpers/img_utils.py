@@ -1,17 +1,32 @@
+import random
+
 import cv2
+import numpy as np
 import torch
 
-import numpy as np
+from source.helpers.transforms import get_2d_rotation
 
-def gen_trans_from_patch_cv(c_x, c_y, src_width, src_height, dst_width, dst_height, inv=False):
-    src_w = src_width.item()
-    src_h = src_height.item()
+
+def gen_trans_from_patch_cv(c_x, c_y,
+                            src_width, src_height,
+                            dst_width, dst_height,
+                            scale, rot,
+                            inv=False):
+    # augment image size with the scale factor
+    src_w = src_width.item() * scale
+    src_h = src_height.item() * scale
+
     src_center = np.zeros(2)
     src_center[0] = c_x
-    src_center[1] = c_y # np.array([c_x, c_y], dtype=np.float32)
+    src_center[1] = c_y  # np.array([c_x, c_y], dtype=np.float32)
 
     src_downdir = np.array([0, src_h * 0.5])
     src_rightdir = np.array([src_w * 0.5, 0])
+
+    # augment image with the rotation factor
+    rot_rad = np.pi * rot / 180
+    src_downdir = get_2d_rotation(src_downdir, rot_rad)
+    src_rightdir = get_2d_rotation(src_rightdir, rot_rad)
 
     dst_w = dst_width
     dst_h = dst_height
@@ -43,11 +58,17 @@ def trans_point2d(pt_2d, trans):
     return dst_pt[0:2]
 
 
-def generate_patch_image_cv(cvimg, c_x, c_y, bb_width, bb_height, patch_width, patch_height):
+def generate_patch_image_cv(cvimg, c_x, c_y, bb_width, bb_height, patch_width, patch_height,
+                            scale_factor, rotation_factor, flip_img):
     img = cvimg.copy()
     img_height, img_width, img_channels = img.shape
 
-    trans = gen_trans_from_patch_cv(c_x, c_y, bb_width, bb_height, patch_width, patch_height, inv=False)
+    if flip_img:
+        img = img[:, ::-1, :]
+        c_x = img_width - c_x - 1
+
+    trans = gen_trans_from_patch_cv(c_x, c_y, bb_width, bb_height, patch_width, patch_height,
+                                    scale=scale_factor, rot=rotation_factor, inv=False)
 
     img_patch = cv2.warpAffine(img, trans, (int(patch_width), int(patch_height)), flags=cv2.INTER_LINEAR)
 
@@ -67,7 +88,8 @@ def convert_cvimg_to_tensor(cvimg):
 
 def trans_coords_from_patch_to_org(coords_in_patch, c_x, c_y, bb_width, bb_height, patch_width, patch_height):
     coords_in_org = coords_in_patch.copy()
-    trans = gen_trans_from_patch_cv(c_x, c_y, bb_width, bb_height, patch_width, patch_height, inv=True)
+    trans = gen_trans_from_patch_cv(c_x, c_y, bb_width, bb_height, patch_width, patch_height,
+                                    scale=1.0, rot=.0, inv=True)
     for p in range(coords_in_patch.shape[0]):
         coords_in_org[p, 0:2] = trans_point2d(coords_in_patch[p, 0:2], trans)
     return coords_in_org
@@ -83,7 +105,11 @@ def trans_coords_from_patch_to_org_3d(coords_in_patch, c_x, c_y, bb_width, bb_he
 def get_single_patch_sample(img_path, center_x, center_y, width, height,
                             patch_width, patch_height,
                             rect_3d_width, rect_3d_height, mean, std,
-                            label_func, joints=None, joints_vis=None,
+                            label_func,
+                            joint_flip_pairs,
+                            apply_augmentations: bool,
+                            augmentation_config,
+                            joints=None, joints_vis=None,
                             DEBUG=False):
     # 1. load image
     cvimg = cv2.imread(
@@ -94,8 +120,20 @@ def get_single_patch_sample(img_path, center_x, center_y, width, height,
 
     img_height, img_width, img_channels = cvimg.shape
 
+    # 2. get augmentation parameters
+    if apply_augmentations:
+        apply_random_flip, color_scale, rotation, scale = get_augmentation_params(augmentation_config)
+    else:
+        scale = 1.0
+        rotation = 0.0
+        apply_random_flip = False
+        color_scale = [1.0, 1.0, 1.0]
+
     # 3. generate image patch
-    img_patch_cv, trans = generate_patch_image_cv(cvimg, center_x, center_y, width, height, patch_width, patch_height)
+    img_patch_cv, trans = generate_patch_image_cv(cvimg, center_x, center_y, width, height, patch_width, patch_height,
+                                                  flip_img=apply_random_flip,
+                                                  scale_factor=scale,
+                                                  rotation_factor=rotation)
 
     image = img_patch_cv.copy()
     image = image[:, :, ::-1]
@@ -105,11 +143,15 @@ def get_single_patch_sample(img_path, center_x, center_y, width, height,
 
     # apply normalization
     for n_c in range(img_channels):
+        img_patch[n_c, :, :] = np.clip(img_patch[n_c, :, :] * color_scale[n_c], 0, 255)  # apply color scaling
         if mean is not None and std is not None:
             img_patch[n_c, :, :] = (img_patch[n_c, :, :] - mean[n_c]) / std[n_c]
 
     # 4. (Only for train/val) generate joint ground truth
     if joints is not None and joints_vis is not None:
+        if apply_random_flip:
+            joints, joints_vis = fliplr_joints(joints, joints_vis, img_width, joint_flip_pairs)
+
         for n_jt in range(len(joints)):
             joints[n_jt, 0:2] = trans_point2d(joints[n_jt, 0:2], trans)
             joints[n_jt, 2] = joints[n_jt, 2] / rect_3d_width * patch_width
@@ -121,6 +163,43 @@ def get_single_patch_sample(img_path, center_x, center_y, width, height,
         label_weight = np.zeros(1)
 
     return img_patch, label, label_weight
+
+
+def get_augmentation_params(augmentation_config):
+    """
+    Randomly chooses augmentation parameters.
+
+    Args:
+        augmentation_config:
+            scale_factor: image scale factor
+            rotation_factor:
+            color_factor:
+            random_flip: True = randomly choose to flip the image
+                         False = do not flip image
+
+    Returns: random factors: scale, rotation, and color scale
+             flipped image: True / false
+
+    """
+    rotation_prob = 0.6
+    flip_prob = 0.5
+
+    # random scale factor (sf) in range: [1.0 - sf, 1.0 + sf]
+    scale = 1.0 + augmentation_config.scale_factor * np.clip(np.random.randn(), a_min=-1.0, a_max=1.0)
+
+    # random rotation factor (rf) in range: rf * [-2.0, 2.0]
+    rotation = augmentation_config.rotation_factor * np.clip(np.random.randn(), a_min=-2.0, a_max=2.0) \
+        if random.random() <= rotation_prob else 0.0
+
+    # randomly flip image
+    apply_random_flip = augmentation_config.random_flip and random.random() <= flip_prob
+
+    # color scaling
+    c_up = 1.0 + augmentation_config.color_factor
+    c_low = 1.0 - augmentation_config.color_factor
+    color_scale = [random.uniform(c_low, c_up), random.uniform(c_low, c_up), random.uniform(c_low, c_up)]
+
+    return apply_random_flip, color_scale, rotation, scale
 
 
 def multi_meshgrid(*args):
@@ -154,3 +233,32 @@ def flip(tensor, dims):
     assert flipped.device == tensor.device
     assert flipped.requires_grad == tensor.requires_grad
     return flipped
+
+
+def fliplr_joints(_joints, _joints_vis, width, matched_parts):
+    """
+    Flip joint coordinates horizontally.
+
+    Based on: https://github.com/JimmySuen/integral-human-pose/blob/ad3f875bc05538da3471ef81484e23fad3e9c787/common/utility/image_processing_cv.py#L13
+
+    Args:
+        _joints: nJoints * dim, dim == 2 [x, y] or dim == 3  [x, y, z]
+        _joints_vis:
+        width: image width
+        matched_parts: list of joint pairs left/right
+
+    Returns: joints, joints_vis
+
+    """
+    joints = _joints.copy()
+    joints_vis = _joints_vis.copy()
+
+    # Flip horizontal
+    joints[:, 0] = width - joints[:, 0] - 1
+
+    # Change left-right parts
+    for pair in matched_parts:
+        joints[pair[0], :], joints[pair[1], :] = joints[pair[1], :], joints[pair[0], :].copy()
+        joints_vis[pair[0], :], joints_vis[pair[1], :] = joints_vis[pair[1], :], joints_vis[pair[0], :].copy()
+
+    return joints, joints_vis
