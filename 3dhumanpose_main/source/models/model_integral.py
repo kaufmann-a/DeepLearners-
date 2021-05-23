@@ -70,11 +70,11 @@ class JointHeatmapDecoder(torch.nn.Module):
         self.depth_dim = depth_dim
 
         # TODO: Add configurable Upsample2x as an alternative to Deconv2x?
-        self.upsample_feature_list = torch.nn.ModuleList()
+        upsample_module_list = []
         for i in range(num_layers):
-            self.upsample_feature_list.append(JointHeatmapDeconv2x(in_channels=in_channels if i == 0 else num_filters,
+            upsample_module_list.append(JointHeatmapDeconv2x(in_channels=in_channels if i == 0 else num_filters,
                                   out_channels=num_filters, kernel_size=kernel_size))
-
+        self.upsample_features = torch.nn.Sequential(*upsample_module_list)
         # TODO: Add configurable "non-bias" end? (see `with_bias_end' in deconv_head.py)
         self.features_to_heatmaps = torch.nn.Conv2d(num_filters, num_joints * depth_dim, kernel_size=1)
 
