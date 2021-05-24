@@ -6,8 +6,6 @@ from source.models.basemodel import BaseModel
 from source.logcreator.logcreator import Logcreator
 
 
-
-
 class BackboneResNet(torch.nn.Sequential):
     def __init__(self, resnet_model):
         resnet = self.resolve_resnet_model(resnet_model, pretrained=True)
@@ -75,6 +73,7 @@ class JointHeatmapDecoder(torch.nn.Module):
             upsample_module_list.append(JointHeatmapDeconv2x(in_channels=in_channels if i == 0 else num_filters,
                                   out_channels=num_filters, kernel_size=kernel_size))
         self.upsample_features = torch.nn.Sequential(*upsample_module_list)
+
         # TODO: Add configurable "non-bias" end? (see `with_bias_end' in deconv_head.py)
         self.features_to_heatmaps = torch.nn.Conv2d(num_filters, num_joints * depth_dim, kernel_size=1)
 
@@ -125,9 +124,9 @@ class JointIntegralRegressor(torch.nn.Module):
         z_maps = heatmaps.sum(dim=3).sum(dim=3)
 
         # Take expected coordinate for each axis (and recenter)
-        x_preds = (x_maps * torch.arange(W)).sum(dim=2) / W - 0.5
-        y_preds = (y_maps * torch.arange(H)).sum(dim=2) / H - 0.5
-        z_preds = (z_maps * torch.arange(D)).sum(dim=2) / D - 0.5
+        x_preds = (x_maps * torch.arange(W).to(heatmaps.device)).sum(dim=2) / W - 0.5
+        y_preds = (y_maps * torch.arange(H).to(heatmaps.device)).sum(dim=2) / H - 0.5
+        z_preds = (z_maps * torch.arange(D).to(heatmaps.device)).sum(dim=2) / D - 0.5
 
         return torch.stack((x_preds, y_preds, z_preds), dim=2)  # Return format N, J, 3
 
