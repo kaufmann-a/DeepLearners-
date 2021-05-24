@@ -14,6 +14,7 @@ from shutil import copy
 
 from source.helpers import converter
 from source.helpers import dictionary
+from source.helpers import environmentvariables
 from source.helpers import reducer
 from source.helpers import filehelper
 
@@ -27,6 +28,7 @@ class Configuration(object):
         global configuration
         if not working_directory:
             working_directory = os.getcwd()
+        environmentvariables.initialize(extend=True)
 
         if not configuration_file:
             raise EnvironmentError(
@@ -78,11 +80,14 @@ class Configuration(object):
                     raise EnvironmentError(
                         "Invalid key"
                     )
+                if isinstance(value, str):
+                    if 'getenv' in value:
+                        return eval('os.' + value)
                 return value
             except:
                 if not optional:
                     raise EnvironmentError(
-                        "Invalid key"
+                        "Invalid key or wrong key specification"
                     )
         return default
 

@@ -35,6 +35,7 @@
             "checkpoint_save_interval" : 70,
             "num_workers" : 8,
             "shuffle_data" : true,
+            "log_to_comet" : true,
         },
         "model": {
             "name": "IntegralPoseRegressionModel",  //  ResPoseNet_Regression, PoseAlexNetReg
