@@ -8,6 +8,7 @@ Model of the road segmentatjion neuronal network learning object.
 __author__ = 'Andreas Kaufmann, Jona Braun, Kouroche Bouchiat'
 __email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, kbouchiat@student.ethz.ch"
 
+from comet_ml import Experiment
 import os
 import sys
 
@@ -17,6 +18,7 @@ from io import StringIO
 
 import numpy as np
 import torch
+import source.helpers.metricslogging as metricslogging
 # import torchmetrics as torchmetrics
 from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
@@ -57,6 +59,9 @@ class Engine:
         if not os.path.exists(Configuration.tensorboard_folder):
             os.makedirs(Configuration.tensorboard_folder)
         self.writer = SummaryWriter(log_dir=Configuration.tensorboard_folder)
+
+        # Init comet
+        self.comet = metricslogging.init_comet()
 
         # Print model summary
         self.print_modelsummary()
@@ -221,6 +226,8 @@ class Engine:
 
         # log values
         self.writer.add_scalar("Loss/train", train_loss, epoch)
+        if self.comet is not None:
+            self.comet.log_metric('train_loss', train_loss, epoch=epoch)
 
         self.lr_scheduler.step()  # decay learning rate over time
 
@@ -303,9 +310,11 @@ class Engine:
 
             if not only_prediction:
                 Logcreator.info(f"Validation: avg. loss: {val_loss:.5f}")
-
-                # log values
+                # Tensorboard logging
                 self.writer.add_scalar("Loss/val", val_loss, epoch)
+
+                if self.comet is not None:
+                    self.comet.log_metric('val_loss', val_loss, epcoh=epoch)
 
             return val_loss, preds_in_patch_with_score
 
