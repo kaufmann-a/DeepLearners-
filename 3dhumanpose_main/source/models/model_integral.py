@@ -115,7 +115,7 @@ class JointIntegralRegressor(torch.nn.Module):
 
         # Apply global softmax to the heatmaps
         heatmaps = heatmaps.reshape(N, J, D * H * W)
-        heatmaps = F.softmax(heatmaps)
+        heatmaps = F.softmax(heatmaps, dim=2)
         heatmaps = heatmaps.reshape(N, J, D, H, W)
 
         # Integrate over other axes
