@@ -33,7 +33,7 @@ class Configuration(object):
                 "Configuration file " + configuration_file + "not found - aborting"
             )
         configuration_dict = Configuration.load_config(configuration_file)
-        configuration = dictionary.to_named_tuple(configuration_dict)
+        configuration = dictionary.to_namespace(configuration_dict)
 
         if inspect.getouterframes(inspect.currentframe(), 2)[1].filename.__contains__('train'):
             Configuration.output_directory = os.path.join(working_directory,

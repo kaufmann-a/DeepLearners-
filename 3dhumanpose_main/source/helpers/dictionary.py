@@ -8,7 +8,9 @@ Dictinoary helpers
 __author__ = 'Andreas Kaufmann, Jona Braun, Kouroche Bouchiat'
 __email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, kbouchiat@student.ethz.ch"
 
-from collections import namedtuple, OrderedDict
+from functools import singledispatch
+from types import SimpleNamespace
+
 
 # Deep merges dictionaries, by modifying destination in place. Source: https://stackoverflow.com/a/20666342/496950
 def merge(source, destination):
@@ -30,7 +32,17 @@ def merge(source, destination):
 
     return destination
 
-def to_named_tuple(dictionary):
-    if not isinstance(dictionary, dict):
-        return dictionary
-    return namedtuple("Config", dictionary.keys())(*[to_named_tuple(v) for v in dictionary.values()])
+
+@singledispatch
+def to_namespace(ob):
+    return ob
+
+
+@to_namespace.register(dict)
+def _namespace_dict(ob):
+    return SimpleNamespace(**{k: to_namespace(v) for k, v in ob.items()})
+
+
+@to_namespace.register(list)
+def _namespace_list(ob):
+    return [to_namespace(v) for v in ob]
