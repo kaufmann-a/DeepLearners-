@@ -172,8 +172,13 @@ class Engine:
             # with torch.cuda.amp.autocast():
             predictions = self.model(batch_data)
 
-            loss = self.loss_function(predictions, batch_label, batch_label_weight)
+            loss_rv = self.loss_function(predictions, batch_label, batch_label_weight)
             del batch_data, batch_label, batch_label_weight, predictions
+
+            if isinstance(loss_rv, dict):
+                loss = loss_rv['loss']
+            else:
+                loss = loss_rv
 
             # backward according to https://pytorch.org/docs/stable/notes/amp_examples.html#amp-examples
             if False:  # TODO: do we use scaler?
@@ -190,7 +195,10 @@ class Engine:
             losses.update(loss.item(), batch_size)
 
             # update tqdm progressbar
-            loop.set_postfix(loss=loss.item())
+            if isinstance(loss_rv, dict):
+                loop.set_postfix(**{k: v.item() for k, v in loss_rv.items()})
+            else:
+                loop.set_postfix(loss=loss.item())
 
             del loss
 
@@ -395,6 +403,9 @@ class Engine:
     def print_modelsummary(self):
         image_size = Configuration.get("data_collection.image_size")
         input_size = tuple(np.insert(image_size, 0, values=3))
+
+        Logcreator.debug(self.model)
+
         # redirect stdout to our logger
         sys.stdout = my_stdout = StringIO()
         summary(self.model, input_size=input_size, device=DEVICE)
