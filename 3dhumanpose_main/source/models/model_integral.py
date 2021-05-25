@@ -146,7 +146,7 @@ class ModelIntegralPoseRegression(BaseModel):
         for dataset in range(len(dataset_params.dataset)):
             dataset_specific_params.append(getattr(dataset_params, str(dataset_params.dataset[dataset]) + "_params"))
 
-        NUM_JOINTS = 18  # ToDo: What do we input here? Especially if we train with different datasets??
+        NUM_JOINTS = 17  # ToDo: What do we input here? Especially if we train with different datasets??
 
         self.backbone = BackboneResNet(model_params.resnet_model)
 

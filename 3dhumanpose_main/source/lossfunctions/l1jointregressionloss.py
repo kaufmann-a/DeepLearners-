@@ -49,12 +49,12 @@ class L1JointRegressionLoss(torch.nn.Module):
 
     @staticmethod
     def regression_loss_2d(pred_joints, gt_joints, gt_joints_vis):
-        error = abs(pred_joints[:, :2] - gt_joints) * gt_joints_vis
+        error = abs(pred_joints[:, :2] - gt_joints) * gt_joints_vis.unsqueeze(1)
         return torch.sum(error)
 
     @staticmethod
     def regression_loss_3d(pred_joints, gt_joints, gt_joints_vis):
-        error = abs(pred_joints - gt_joints) * gt_joints_vis
+        error = abs(pred_joints - gt_joints) * gt_joints_vis.unsqueeze(1)
         return torch.sum(error)
 
     def forward(self, preds, batch_joints, batch_joints_vis):
@@ -74,11 +74,11 @@ class L1JointRegressionLoss(torch.nn.Module):
 
             if gt_joints.shape == (J, 2):
                 batch_losses.append(
-                    self.regression_loss_2d(preds[batch_idx], gt_joints, gt_joints_vis, self.sigma)
+                    self.regression_loss_2d(preds[batch_idx], gt_joints, gt_joints_vis)
                 )
             elif gt_joints.shape == (J, 3):
                 batch_losses.append(
-                    self.regression_loss_3d(preds[batch_idx], gt_joints, gt_joints_vis, self.sigma)
+                    self.regression_loss_3d(preds[batch_idx], gt_joints, gt_joints_vis)
                 )
             else:
                 raise AssertionError(
@@ -86,4 +86,4 @@ class L1JointRegressionLoss(torch.nn.Module):
                     f'where {J=} but actual {gt_joints.shape}'
                 )
 
-        return torch.cat(batch_losses).sum()
+        return torch.stack(batch_losses).sum()
