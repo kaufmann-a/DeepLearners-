@@ -72,10 +72,9 @@
             "beta2": 0.999
         },
         "loss": {
-            "loss_function": "IntegralJointLocationLoss", // L1JointRegressionLoss
-            "norm" : false,
-            "loss_type": "L1",
-            "output_3d": true,
+            "loss_function": "JointMultiLoss", // L1JointRegressionLoss
+            "loss_weight_heatmap": 0.5,
+            "loss_weight_regression": 0.5
         },
         "lr_scheduler": {
             "name": "multiStepLR",
