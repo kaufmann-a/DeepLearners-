@@ -7,6 +7,7 @@ __email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, kbouchiat@stu
 
 import argparse
 import os
+import sys
 import time
 
 from source.configuration import Configuration
@@ -15,6 +16,13 @@ from source.helpers import argumenthelper
 from source.logcreator.logcreator import Logcreator
 
 if __name__ == "__main__":
+
+    # Enable ANSI escape codes on Windows
+    if sys.platform == 'win32':
+        from ctypes import windll
+        k = windll.kernel32
+        k.SetConsoleMode(k.GetStdHandle(-11), 7)
+
     global config
     # Sample Config:
     parser = argparse.ArgumentParser(description="Executes a training session.")
