@@ -104,19 +104,42 @@ class H36M(JointDataset):
         :returns: annotations
 
         """
-        file_name = os.path.join(self.root,
-                                 'annot',
-                                 self.image_set + '.pkl')
 
-        # We use a trick to read the pickle file without the original code structure
-        # All what we need to do is to set unnecessary modules to a dummy value and redirect the cameras module
-        sys.modules['lib'] = "sometimes"
-        sys.modules['lib.dataset'] = "life"
-        sys.modules['lib.utils'] = "is not easy :-)"
-        sys.modules['lib.utils.cameras'] = source.helpers.cameras
+        file_name = self.image_set + '.pkl'
 
-        with open(file_name, 'rb') as anno_file:
-            anno = pkl.load(anno_file)
+        # get file paths
+        working_dir = os.getcwd()
+        working_dir = os.path.join(working_dir, os.pardir)  # move one directory up
+        folder = "h36m_annot"
+        folder_path = os.path.join(working_dir, folder)
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+
+        file_path_new = os.path.join(folder_path, file_name)
+
+        if not os.path.exists(file_path_new):
+            # load old pickle file
+            file_path = os.path.join(self.root,
+                                     'annot',
+                                     file_name)
+
+            # We use a trick to read the pickle file without the original code structure
+            # All what we need to do is to set unnecessary modules to a dummy value and redirect the cameras module
+            sys.modules['lib'] = "sometimes"
+            sys.modules['lib.dataset'] = "life"
+            sys.modules['lib.utils'] = "is not easy :-)"
+            sys.modules['lib.utils.cameras'] = source.helpers.cameras
+
+            with open(file_path, 'rb') as anno_file:
+                anno = pkl.load(anno_file)
+
+            # save new pickle file
+            with open(file_path_new, 'wb') as anno_file:
+                pkl.dump(anno, anno_file, protocol=pkl.HIGHEST_PROTOCOL)
+        else:
+            # load new pickle file
+            with open(file_path_new, 'rb') as anno_file:
+                anno = pkl.load(anno_file)
 
         return anno
 
