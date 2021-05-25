@@ -69,7 +69,7 @@ class L1JointRegressionLoss(torch.nn.Module):
             gt_joints_vis = batch_joints_vis[batch_idx]
 
             assert gt_joints_vis.shape == (J,), \
-                f'Invalid shape for batch_joints_vis[{batch_idx}]: expected (J,)' \
+                f'Invalid shape for batch_joints_vis[{batch_idx}]: expected (J,) ' \
                 f'where {J=} but actual {gt_joints_vis.shape}'
 
             if gt_joints.shape == (J, 2):
