@@ -15,15 +15,13 @@ def generate_3d_integral_preds_tensor(heatmaps, num_joints, x_dim, y_dim, z_dim)
     accu_z = heatmaps.sum(dim=3)
     accu_z = accu_z.sum(dim=3)
 
-    accu_x = accu_x * \
-             torch.cuda.comm.broadcast(torch.arange(x_dim).type(torch.cuda.FloatTensor), devices=[accu_x.device.index])[
-                 0]
-    accu_y = accu_y * \
-             torch.cuda.comm.broadcast(torch.arange(y_dim).type(torch.cuda.FloatTensor), devices=[accu_y.device.index])[
-                 0]
-    accu_z = accu_z * \
-             torch.cuda.comm.broadcast(torch.arange(z_dim).type(torch.cuda.FloatTensor), devices=[accu_z.device.index])[
-                 0]
+    if "cuda" if torch.cuda.is_available() else "cpu" != 'cpu':
+        accu_x = accu_x * torch.cuda.comm.broadcast(torch.arange(x_dim).
+                                                    type(torch.cuda.FloatTensor), devices=[accu_x.device.index])[0]
+        accu_y = accu_y * torch.cuda.comm.broadcast(torch.arange(y_dim).
+                                                    type(torch.cuda.FloatTensor), devices=[accu_y.device.index])[0]
+        accu_z = accu_z * torch.cuda.comm.broadcast(torch.arange(z_dim).
+                                                    type(torch.cuda.FloatTensor), devices=[accu_z.device.index])[0]
 
     accu_x = accu_x.sum(dim=2, keepdim=True)
     accu_y = accu_y.sum(dim=2, keepdim=True)
