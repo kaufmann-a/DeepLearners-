@@ -322,7 +322,7 @@ class Engine:
                 self.writer.add_scalar("Loss/val", val_loss, epoch)
 
                 if self.comet is not None:
-                    self.comet.log_metric('val_loss', val_loss, epcoh=epoch)
+                    self.comet.log_metric('val_loss', val_loss, epoch=epoch)
 
             return val_loss, preds_in_patch_with_score
 
