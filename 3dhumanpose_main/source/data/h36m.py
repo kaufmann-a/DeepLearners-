@@ -79,7 +79,8 @@ class H36M(JointDataset):
                 for cid in range(self.num_cams):
                     a = anno[cid + 1][idx]
                     a['is_h36m'] = True  # TODO can be removed, except if we want to know the source somewhere later
-                    gt_db[cid].append(a)
+                    if os.path.isfile(os.path.join(self.root, a['image'])):
+                        gt_db[cid].append(a)
 
             # convert the database/list per camera back to one single list -> we do not use multi view
             temp_db = []

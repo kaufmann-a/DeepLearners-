@@ -75,9 +75,14 @@ class MPIIDataset(JointDataset):
             c = np.array(a['center'], dtype=np.float)
             s = np.array([a['scale'], a['scale']], dtype=np.float)  # 2d array with individual scale for x and y
 
+
             if c[0] < 1:  # if the center is smaller we skip the image # TODO is this the correct thing to do?
                 if False:
                     print(c)
+                continue
+
+            #Just add image to db if it exists on disk
+            if not os.path.isfile(os.path.join(self.root, 'images', a['image'])):
                 continue
 
             # TODO Ask on piazza if the following argumentations are already done to the mpii data that was
