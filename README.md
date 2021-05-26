@@ -13,7 +13,7 @@
 
 ## General: loading environment
 1. `cd ./DeepLearners/`
-2. Load software modules: `module load gcc/6.3.0 python_gpu/3.8.5 tmux/2.6`
+2. Load software modules: `module load gcc/6.3.0 python_gpu/3.8.5 tmux/2.6 eth_proxy`
 3. Load python env: `source ./mp_env/bin/activate`
 
 ## Run training
