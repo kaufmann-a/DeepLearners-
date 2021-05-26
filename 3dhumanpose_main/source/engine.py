@@ -260,9 +260,9 @@ class Engine:
             for i, data in enumerate(loop):
                 batch_data, batch_label, batch_label_weight, meta = data
 
-                batch_data = batch_data.cuda()
-                batch_label = batch_label.cuda()
-                batch_label_weight = batch_label_weight.cuda()
+                batch_data = batch_data.to(DEVICE)
+                batch_label = batch_label.to(DEVICE)
+                batch_label_weight = batch_label_weight.to(DEVICE)
 
                 batch_size = batch_data.size(0)
 
