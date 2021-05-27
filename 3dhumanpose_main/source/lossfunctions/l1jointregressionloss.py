@@ -43,10 +43,13 @@ class L1JointRegressionLoss(torch.nn.Module):
         self.size_average = size_average
 
     def regression_loss_2d(self, pred_joints, gt_joints, gt_joints_vis):
-        return weighted_l1_loss(pred_joints[:, :2], gt_joints, gt_joints_vis.unsqueeze(1), self.size_average)
+        return weighted_l1_loss(pred_joints[:, :2], gt_joints, gt_joints_vis.unsqueeze(1), False)
 
     def regression_loss_3d(self, pred_joints, gt_joints, gt_joints_vis):
-        return weighted_l1_loss(pred_joints, gt_joints, gt_joints_vis.unsqueeze(1), self.size_average)
+        # error = abs(pred_joints - gt_joints) * gt_joints_vis.unsqueeze(1)
+        # err2 = weighted_l1_loss(pred_joints, gt_joints, gt_joints_vis.unsqueeze(1), False)
+        # assert(err2 == torch.sum(error))
+        return weighted_l1_loss(pred_joints, gt_joints, gt_joints_vis.unsqueeze(1), False)
 
     def forward(self, preds, batch_joints, batch_joints_vis):
         N, J, _ = preds.shape
@@ -76,5 +79,6 @@ class L1JointRegressionLoss(torch.nn.Module):
                     f'Invalid shape for batch_joints[{batch_idx}]: expected (J, 2) or (J, 3) '
                     f'where {J=} but actual {gt_joints.shape}'
                 )
-
+        if self.size_average:
+            return torch.stack(batch_losses).mean()
         return torch.stack(batch_losses).sum()
