@@ -64,7 +64,7 @@
             "num_deconv_layers" : 3,
             "num_deconv_filters" : 256,
             "kernel_size" : 4,
-            "depth_dim" : 1
+            "depth_dim" : 64
         },
         "optimizer": {
             "name": "adam",
