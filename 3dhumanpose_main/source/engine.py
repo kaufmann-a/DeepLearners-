@@ -27,7 +27,7 @@ from tqdm import tqdm
 
 from source.configuration import Configuration
 from source.helpers.img_utils import trans_coords_from_patch_to_org_3d
-from source.helpers.utils import AverageMeter
+from source.helpers.metrics import AverageMeter, AverageMeterDict
 
 from source.logcreator.logcreator import Logcreator
 from source.lossfunctions.loss_helpers import get_result_func
@@ -151,7 +151,8 @@ class Engine:
 
         batch_time = AverageMeter()
         data_time = AverageMeter()
-        losses = AverageMeter()
+        loss_metric = AverageMeter()
+        loss_metric_dict = AverageMeterDict(dictionary_keys=['heatmap_loss', 'regression_loss'])
 
         # progressbar
         loop = tqdm(data_loader, file=sys.stdout, colour='green')
@@ -182,6 +183,7 @@ class Engine:
 
             if isinstance(loss_rv, dict):
                 loss = loss_rv['loss']
+                loss_metric_dict.update(loss_rv)
             else:
                 loss = loss_rv
 
@@ -197,7 +199,7 @@ class Engine:
 
             # update loss
             # record loss
-            losses.update(loss.item(), batch_size)
+            loss_metric.update(loss.item(), batch_size)
 
             # update tqdm progressbar
             if isinstance(loss_rv, dict):
@@ -223,19 +225,15 @@ class Engine:
                       'Loss {loss.val:.5f} ({loss.avg:.5f})'.format(
                     epoch, batch_idx, len(data_loader), batch_time=batch_time,
                     speed=batch_size / batch_time.val,
-                    data_time=data_time, loss=losses)
+                    data_time=data_time, loss=loss_metric)
                 Logcreator.info(msg)
 
         loop.close()
 
-        train_loss = losses.avg
+        train_loss = loss_metric.avg
 
-        Logcreator.info(f"Training: avg. loss: {train_loss:.5f}")
-
-        # log values
-        self.writer.add_scalar("Loss/train", train_loss, epoch)
-        if self.comet is not None:
-            self.comet.log_metric('train_loss', train_loss, epoch=epoch)
+        loss_metric_dict.log(self.writer, self.comet, epoch, "train")
+        loss_metric.log(self.writer, self.comet, epoch, "train")
 
         self.lr_scheduler.step()  # decay learning rate over time
 
@@ -250,7 +248,8 @@ class Engine:
 
         result_func = get_result_func()
 
-        losses = AverageMeter()
+        loss_metric = AverageMeter()
+        loss_metric_dict = AverageMeterDict(dictionary_keys=['heatmap_loss', 'regression_loss'])
 
         # initialize the progressbar
         loop = tqdm(data_loader, file=sys.stdout, colour='green')
@@ -274,11 +273,12 @@ class Engine:
 
                     if isinstance(loss_rv, dict):
                         loss = loss_rv['loss']
+                        loss_metric_dict.update(loss_rv)
                     else:
                         loss = loss_rv
 
                     # update loss
-                    losses.update(loss.item(), batch_size)
+                    loss_metric.update(loss.item(), batch_size)
 
                     # update tqdm progressbar
                     if isinstance(loss_rv, dict):
@@ -322,15 +322,11 @@ class Engine:
 
             preds_in_patch_with_score = _p[0: len(data_loader.dataset)]
 
-            val_loss = losses.avg
+            val_loss = loss_metric.avg
 
             if not only_prediction:
-                Logcreator.info(f"Validation: avg. loss: {val_loss:.5f}")
-                # Tensorboard logging
-                self.writer.add_scalar("Loss/val", val_loss, epoch)
-
-                if self.comet is not None:
-                    self.comet.log_metric('val_loss', val_loss, epoch=epoch)
+                loss_metric_dict.log(self.writer, self.comet, epoch, "val")
+                loss_metric.log(self.writer, self.comet, epoch, "val")
 
             return val_loss, preds_in_patch_with_score
 
