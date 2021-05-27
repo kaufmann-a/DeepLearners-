@@ -376,6 +376,9 @@ class Engine:
 
                 self.writer.add_scalar("MPJPE/val", perf, epoch)
 
+                if self.comet is not None:
+                    self.comet.log_metric('val_mpjpe', perf, epoch=epoch)
+
                 return perf
 
         return 0.0
