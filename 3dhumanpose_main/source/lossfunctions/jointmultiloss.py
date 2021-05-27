@@ -35,7 +35,7 @@ class JointMultiLoss(torch.nn.Module):
         batch_joints_vis = batch_joints_vis[:, ::3].reshape(N, J)
 
         # Remove Z coordinates when detecting an MPII batch
-        if (batch_joints[:, :, 2] == 0.0).all():
+        if (batch_joints[:, :, 2] == 0.0).all():  # TODO this does not work a batch can be mixed with h36m and mpii!
             batch_joints = batch_joints[:, :, :2]
 
         # TODO: Improve API for multiple losses (and display them seperately in Tensorboard)
