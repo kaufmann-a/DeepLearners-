@@ -1,0 +1,98 @@
+{
+    "environment": {
+        "name" : "Name of the run - this is just a default config file",
+        "output_path": "trainings", //Creates a folder with name output_path in this folder traininglogs etc. will be saved
+        "log_file" : "logs.txt" //Name of the log file
+    },
+    "data_collection" : {
+        "folder" : "../data",
+        "dataset" : ["h36m", "mpii"],
+        "augmentations" : {
+            "scale_factor" : 0,
+            "rotation_factor" : 0,
+            "color_factor": 0,
+            "random_flip" : false,
+        },
+        "h36m_params" : {
+            "train_set": "train",
+            "val_set": "val",
+            "num_joints" : 17,
+            "num_cams": 4,
+        },
+         "mpii_params" : {
+            "train_set": "train",
+            "val_set": "valid",
+            "num_joints" : 16,
+            "num_cams": 1,
+        },
+        "image_size": [256, 256],
+        "z_weight" : 1.0,
+    },
+    "training": {
+        "general" : {
+            "batch_size": 32,
+            "num_epochs" : 140,
+            "checkpoint_save_interval" : 70,
+            "num_workers" : 8,
+            "shuffle_data" : true,
+            "log_to_comet" : false,
+        },
+        "model": {
+            "name": "IntegralPoseRegressionModel",  //  ResPoseNet_Regression, PoseAlexNetReg
+            "num_joints" : 17,
+            "resnet_model" : "resnet50", //"resnet18", "resnet34", "resnet101", "resnet152"
+            "resnet18_params" : {
+                "layers" : [2, 2, 2, 2],
+                "channels" : [64, 64, 128, 256, 512]
+            },
+            "resnet34_params" : {
+                "layers" : [3, 4, 6, 3],
+                "channels" : [64, 64, 128, 256, 512]
+            },
+            "resnet50_params" : {
+                "layers" : [3, 4, 6, 3],
+                "channels" : [64, 256, 512, 1024, 2048]
+            },
+            "resnet101_params" : {
+                "layers" : [3, 4, 23, 3],
+                "channels" : [64, 256, 512, 1024, 2048]
+            },
+            "resnet152_params" : {
+                "layers" : [3, 8, 36, 3],
+                "channels" : [64, 256, 512, 1024, 2048]
+            },
+            "num_deconv_layers" : 3,
+            "num_deconv_filters" : 256,
+            "kernel_size" : 4,
+            "depth_dim" : 1
+        },
+        "optimizer": {
+            "name": "adam",
+            "lr": 0.0001,
+            "beta1": 0.9,
+            "beta2": 0.999
+        },
+        "loss": {
+            "loss_function": "JointMultiLoss", // L1JointRegressionLoss
+            "loss_weight_heatmap": 0,
+            "loss_weight_regression": 0.5
+        },
+        "lr_scheduler": {
+            "name": "multiStepLR",
+            "stepLR": {
+                "step_size" : 10,
+                "gamma" : 0.1,
+            },
+            "multiStepLR": {
+                "milestones" : [90,120],
+                "gamma" : 0.1,
+            }
+        },
+    },
+    "inference" : {
+        "general" : {
+            "foreground_threshold" : 0.25,
+            "use_original_image_size" : false,
+        }
+    }
+}
