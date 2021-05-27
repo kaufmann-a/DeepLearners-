@@ -270,13 +270,21 @@ class Engine:
                 predictions = self.model(batch_data)
 
                 if not only_prediction:
-                    loss = self.loss_function(predictions, batch_label, batch_label_weight)
+                    loss_rv = self.loss_function(predictions, batch_label, batch_label_weight)
+
+                    if isinstance(loss_rv, dict):
+                        loss = loss_rv['loss']
+                    else:
+                        loss = loss_rv
 
                     # update loss
                     losses.update(loss.item(), batch_size)
 
                     # update tqdm progressbar
-                    loop.set_postfix(loss=loss.item())
+                    if isinstance(loss_rv, dict):
+                        loop.set_postfix(**{k: v.item() for k, v in loss_rv.items()})
+                    else:
+                        loop.set_postfix(loss=loss.item())
 
                     del loss
 

@@ -16,6 +16,14 @@ def generate_joint_location_label(patch_width, patch_height, joints, joints_vis)
     return joints, joints_vis
 
 
+def get_integral_joint_location_result(patch_width, patch_height, preds):
+    heatmap, pred_jts = preds
+
+    pred_jts = pred_jts.reshape((pred_jts.shape[0], 17 * 3))
+
+    return get_joint_regression_result(patch_width, patch_height, pred_jts)
+
+
 def get_joint_regression_result(patch_width, patch_height, preds):
     num_joints = preds.shape[1] // 3
 
@@ -51,4 +59,6 @@ def get_result_func():
         func = integral.get_result_func(loss_cfg)
         # partially apply function (because it has additionally a config parameter)
         return partial(func, config=loss_cfg)
+    if loss_cfg.loss_function == "JointMultiLoss":
+        return get_integral_joint_location_result
     return get_joint_regression_result
