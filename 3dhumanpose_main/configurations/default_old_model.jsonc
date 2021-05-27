@@ -5,7 +5,7 @@
         "log_file" : "logs.txt" //Name of the log file
     },
     "data_collection" : {
-        "folder" : "D:/GitHub/DeepLearners/data/",
+        "folder" : "../data/",
         "dataset" : ["h36m", "mpii"],
         "augmentations" : {
             "scale_factor" : 0.25,
@@ -64,7 +64,7 @@
             "num_deconv_layers" : 3,
             "num_deconv_filters" : 256,
             "kernel_size" : 4,
-            "depth_dim" : 1
+            "depth_dim" : 64
         },
         "optimizer": {
             "name": "adam",
