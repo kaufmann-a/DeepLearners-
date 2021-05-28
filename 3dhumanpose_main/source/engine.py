@@ -54,6 +54,8 @@ class Engine:
         self.loss_function = LossFunctionFactory.build(self.model).to(DEVICE)
         # self.scaler = torch.cuda.amp.GradScaler()  # I assumed we always use gradscaler, thus no factory for this
 
+        self.patch_size = Configuration.get("data_collection.image_size")
+
         # initialize tensorboard logger
         Configuration.tensorboard_folder = os.path.join(Configuration.output_directory, "tensorboard")
         if not os.path.exists(Configuration.tensorboard_folder):
@@ -290,37 +292,15 @@ class Engine:
 
                 del batch_data, batch_label, batch_label_weight
 
-                preds_in_patch_with_score.append(result_func(patch_width=256, patch_height=256,
-                                                             preds=predictions))  # TODO understand result_func and maybe refactor it
+                preds_in_patch_with_score.append(result_func(patch_width=self.patch_size[0],
+                                                             patch_height=self.patch_size[1],
+                                                             preds=predictions))
                 del predictions
 
             loop.close()
 
-            # TODO This line causes "VisibleDeprecationWarning" (see TODO below)
-            _p = np.asarray(preds_in_patch_with_score)
-
-            # Dirty solution for partial batches
-            if len(_p.shape) < 2:
-                tp = np.zeros(((_p.shape[0] - 1) * _p[0].shape[0] + _p[-1].shape[0], _p[0].shape[1], _p[0].shape[2]))
-
-                start = 0
-                end = _p[0].shape[0]
-
-                for t in _p:
-                    tp[start:end] = t
-                    start = end
-                    end += t.shape[0]
-
-                _p = tp
-            else:
-                _p = _p.reshape((_p.shape[0] * _p.shape[1], _p.shape[2], _p.shape[3]))
-
-            # TODO Understand how we use preds_in_patch_with_score and why code above is needed or not needed
-            #  Following code with np.vstack works, as a replacement of all the code above (but does it work in every case?):
-            # _test = np.vstack(preds_in_patch_with_score)
-            # assert(np.equal(_test, _p[0: len(data_loader.dataset)]).all())
-
-            preds_in_patch_with_score = _p[0: len(data_loader.dataset)]
+            # to array
+            preds_in_patch_with_score = np.vstack(preds_in_patch_with_score)
 
             val_loss = loss_metric.avg
 
