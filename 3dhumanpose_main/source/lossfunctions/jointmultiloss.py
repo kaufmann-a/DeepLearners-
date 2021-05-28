@@ -35,7 +35,6 @@ class JointMultiLoss(torch.nn.Module):
         if (batch_joints[:, :, 2] == 0.0).all():
             batch_joints = batch_joints[:, :, :2]
 
-        # TODO: Improve API for multiple losses (and display them seperately in Tensorboard)
         rv = {}
         if self.heatmap_weight != 0.0:
             rv['heatmap_loss'] = self.heatmap_weight * self.heatmap_loss(heatmaps, batch_joints, batch_joints_vis)
