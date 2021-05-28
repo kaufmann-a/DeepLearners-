@@ -74,8 +74,8 @@
         },
         "loss": {
             "loss_function": "JointMultiLoss", // L1JointRegressionLoss
-            "loss_weight_heatmap": 0,
-            "loss_weight_regression": 0.5
+            "loss_weight_heatmap": 0.0,
+            "loss_weight_regression": 1.0
         },
         "lr_scheduler": {
             "name": "multiStepLR",
