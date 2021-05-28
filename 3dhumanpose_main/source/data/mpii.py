@@ -32,8 +32,8 @@ class MPIIDataset(JointDataset):
         15: 'LWrist'
     }
 
-    def __init__(self, general_cfg, is_train):
-        super().__init__(general_cfg, is_train)
+    def __init__(self, general_cfg, label_function, is_train):
+        super().__init__(general_cfg, label_function, is_train)
 
         self.parent_ids = np.array(MPII_PARENT_IDS, dtype=np.int)
         self.flip_pairs = np.array(MPII_FLIP_PAIRS, dtype=np.int)
@@ -75,13 +75,12 @@ class MPIIDataset(JointDataset):
             c = np.array(a['center'], dtype=np.float)
             s = np.array([a['scale'], a['scale']], dtype=np.float)  # 2d array with individual scale for x and y
 
-
             if c[0] < 1:  # if the center is smaller we skip the image # TODO is this the correct thing to do?
                 if False:
                     print(c)
                 continue
 
-            #Just add image to db if it exists on disk
+            # Just add image to db if it exists on disk
             if not os.path.isfile(os.path.join(self.root, 'images', a['image'])):
                 continue
 

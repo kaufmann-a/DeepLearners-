@@ -28,7 +28,7 @@ class JointDataset(Dataset):
         16: 'RWrist',
     }
 
-    def __init__(self, general_cfg, is_train):
+    def __init__(self, general_cfg, label_function, is_train):
         """
         Based on: https://github.com/yihui-he/epipolar-transformers/blob/4da5cbca762aef6a89d37f889789f772b87d2688/data/datasets/joints_dataset.py
 
@@ -61,7 +61,7 @@ class JointDataset(Dataset):
         self.mean = np.array([123.675, 116.280, 103.530])
         self.std = np.array([58.395, 57.120, 57.375])
 
-        self.label_func = self.get_label_func()
+        self.label_func = label_function
 
         self.parent_ids = None
         self.flip_pairs = None
@@ -97,18 +97,6 @@ class JointDataset(Dataset):
                     joints_union_vis[i] = joints_vis[index]
             item['joints_3d'] = joints_union
             item['joints_3d_vis'] = joints_union_vis
-
-    def generate_joint_location_label(self, patch_width, patch_height, joints, joints_vis):
-        joints[:, 0] = joints[:, 0] / patch_width - 0.5
-        joints[:, 1] = joints[:, 1] / patch_height - 0.5
-        joints[:, 2] = joints[:, 2] / patch_width
-
-        joints = joints.reshape((-1))
-        joints_vis = joints_vis.reshape((-1))
-        return joints, joints_vis
-
-    def get_label_func(self):
-        return self.generate_joint_location_label
 
     def __len__(self, ):
         return self.db_length

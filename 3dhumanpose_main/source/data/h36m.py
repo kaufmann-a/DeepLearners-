@@ -39,8 +39,8 @@ class H36M(JointDataset):
         16: 'RWrist',
     }
 
-    def __init__(self, general_cfg, is_train):
-        super().__init__(general_cfg, is_train)
+    def __init__(self, general_cfg, label_function, is_train):
+        super().__init__(general_cfg, label_function, is_train)
 
         self.parent_ids = np.array([0, 0, 1, 2, 0, 4, 5, 0, 8, 8, 9, 8, 11, 12, 8, 14, 15], dtype=np.int)
         self.flip_pairs = np.array([[1, 4], [2, 5], [3, 6], [14, 11], [15, 12], [16, 13]], dtype=np.int)
