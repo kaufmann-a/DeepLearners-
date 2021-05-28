@@ -133,7 +133,7 @@ class Engine:
 
             if perf_indicator > best_perf:
                 best_perf = perf_indicator
-                best_model = True
+                best_model = True  # TODO save the best model separately (start saving after 30 epochs)
             else:
                 best_model = False
 
