@@ -32,7 +32,7 @@
         "general" : {
             "batch_size": 32,
             "num_epochs" : 140,
-            "checkpoint_save_interval" : 70,
+            "checkpoint_save_interval" : 20,
             "num_workers" : 8,
             "shuffle_data" : true,
             "log_to_comet" : false,
