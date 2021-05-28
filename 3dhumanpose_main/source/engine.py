@@ -123,7 +123,7 @@ class Engine:
 
             val_loss, preds_in_patch_with_score = self.validate(valid_loader, epoch)
             acc = self.evaluate(epoch, preds_in_patch_with_score, valid_loader,
-                                final_output_path=Configuration.output_directory,
+                                final_output_path=None,
                                 debug=False,
                                 writer_dict=False)
 
