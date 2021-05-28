@@ -55,6 +55,7 @@ class Engine:
         # self.scaler = torch.cuda.amp.GradScaler()  # I assumed we always use gradscaler, thus no factory for this
 
         self.patch_size = Configuration.get("data_collection.image_size")
+        self.result_func = get_result_func()
 
         # initialize tensorboard logger
         Configuration.tensorboard_folder = os.path.join(Configuration.output_directory, "tensorboard")
@@ -114,7 +115,11 @@ class Engine:
         while epoch < train_parms.num_epochs:
             Logcreator.info(f"Epoch {epoch}, lr: {self.get_lr():.3e}, lr-step: {self.lr_scheduler.last_epoch}")
 
-            train_loss = self.train_step(train_loader, epoch)
+            train_loss, preds_in_patch_with_score = self.train_step(train_loader, epoch)
+            self.evaluate(epoch, preds_in_patch_with_score, train_loader,
+                          final_output_path=None,
+                          debug=False,
+                          writer_dict=False)
 
             val_loss, preds_in_patch_with_score = self.validate(valid_loader, epoch)
             acc = self.evaluate(epoch, preds_in_patch_with_score, valid_loader,
@@ -161,6 +166,7 @@ class Engine:
 
         end = time.time()
 
+        preds_in_patch_with_score = []
         # for all batches
         for batch_idx, data in enumerate(loop):
             # measure data loading time
@@ -181,7 +187,7 @@ class Engine:
             predictions = self.model(batch_data)
 
             loss_rv = self.loss_function(predictions, batch_label, batch_label_weight)
-            del batch_data, batch_label, batch_label_weight, predictions
+            del batch_data, batch_label, batch_label_weight
 
             if isinstance(loss_rv, dict):
                 loss = loss_rv['loss']
@@ -212,7 +218,10 @@ class Engine:
             del loss
 
             # update metrics
-            # TODO update metrics
+            preds_in_patch_with_score.append(self.result_func(patch_width=self.patch_size[0],
+                                                              patch_height=self.patch_size[1],
+                                                              preds=predictions))
+            del predictions
 
             # measure elapsed time
             batch_time.update(time.time() - end)
@@ -232,6 +241,9 @@ class Engine:
 
         loop.close()
 
+        # to array
+        preds_in_patch_with_score = np.vstack(preds_in_patch_with_score)
+
         train_loss = loss_metric.avg
 
         loss_metric_dict.log(self.writer, self.comet, epoch, "train")
@@ -239,7 +251,7 @@ class Engine:
 
         self.lr_scheduler.step()  # decay learning rate over time
 
-        return train_loss
+        return train_loss, preds_in_patch_with_score
 
     def validate(self, data_loader, epoch, only_prediction=False):
         """
@@ -247,8 +259,6 @@ class Engine:
         """
         print("Validation step")
         self.model.eval()
-
-        result_func = get_result_func()
 
         loss_metric = AverageMeter()
         loss_metric_dict = AverageMeterDict(dictionary_keys=['heatmap_loss', 'regression_loss'])
@@ -292,9 +302,9 @@ class Engine:
 
                 del batch_data, batch_label, batch_label_weight
 
-                preds_in_patch_with_score.append(result_func(patch_width=self.patch_size[0],
-                                                             patch_height=self.patch_size[1],
-                                                             preds=predictions))
+                preds_in_patch_with_score.append(self.result_func(patch_width=self.patch_size[0],
+                                                                  patch_height=self.patch_size[1],
+                                                                  preds=predictions))
                 del predictions
 
             loop.close()
@@ -338,9 +348,10 @@ class Engine:
                 if 'joints_3d' in imdb.db[0].keys():
                     name_value, perf = imdb.evaluate(preds_in_img_with_score.copy(), final_output_path,
                                                      debug=debug,
+                                                     epoch=epoch,
+                                                     writer=self.writer,
+                                                     comet=self.comet,
                                                      writer_dict=writer_dict)
-                    for name, value in name_value:
-                        Logcreator.info(f'Epoch[{epoch}] Validation-{name} {value}')
                 else:
                     Logcreator.info('Test set is used, saving results to %s', final_output_path)
                     _, perf = imdb.evaluate(preds_in_img_with_score.copy(), final_output_path,
@@ -349,11 +360,6 @@ class Engine:
                     perf = 0.0
 
                 Logcreator.info("Mean per joint position error", perf)
-
-                self.writer.add_scalar("MPJPE/val", perf, epoch)
-
-                if self.comet is not None:
-                    self.comet.log_metric('val_mpjpe', perf, epoch=epoch)
 
                 return perf
 

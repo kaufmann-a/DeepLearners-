@@ -144,7 +144,7 @@ class H36M(JointDataset):
 
         return header_pred, header_gt, fmt_pred, fmt_gt
 
-    def evaluate(self, preds, save_path=None, debug=False, writer_dict=None):
+    def evaluate(self, preds, save_path=None, debug=False, epoch=0, writer=None, comet=None, writer_dict=None):
         preds = preds[:, :, 0:3]
 
         gt_poses_glob = []
@@ -328,13 +328,33 @@ class H36M(JointDataset):
             for idx, name in enumerate(self.union_joints.values()):
                 Logcreator.info(name, per_joint_error[idx])
 
+            mpjpe = np.asarray(dist).mean()
+            mpjpe_14 = np.asarray(dist_14).mean()
+            mpjpe_x = np.array(dist_x).mean()
+            mpjpe_y = np.array(dist_y).mean()
+            mpjpe_z = np.array(dist_z).mean()
+
             name_value = [
-                ('hm36_17j      :', np.asarray(dist).mean()),
-                ('hm36_17j_14   :', np.asarray(dist_14).mean()),
-                ('hm36_17j_x    :', np.array(dist_x).mean()),
-                ('hm36_17j_y    :', np.array(dist_y).mean()),
-                ('hm36_17j_z    :', np.array(dist_z).mean()),
+                ('hm36_17j      :', mpjpe),
+                ('hm36_17j_14   :', mpjpe_14),
+                ('hm36_17j_x    :', mpjpe_x),
+                ('hm36_17j_y    :', mpjpe_y),
+                ('hm36_17j_z    :', mpjpe_z),
             ]
+
+            for name, value in name_value:
+                Logcreator.info(f'Epoch[{epoch}]', self.name, f'-{name} {value}')
+
+            if writer is not None:
+                writer.add_scalar("MPJPE/" + self.name, mpjpe, epoch)
+
+            if comet is not None:
+                comet.log_metric(self.name + '_mpjpe', mpjpe, epoch=epoch)
+                comet.log_metric(self.name + '_mpjpe_14', mpjpe_14, epoch=epoch)
+                comet.log_metric(self.name + '_mpjpe_x', mpjpe_x, epoch=epoch)
+                comet.log_metric(self.name + '_mpjpe_y', mpjpe_y, epoch=epoch)
+                comet.log_metric(self.name + '_mpjpe_z', mpjpe_z, epoch=epoch)
+
         else:
             name_value = []
 
