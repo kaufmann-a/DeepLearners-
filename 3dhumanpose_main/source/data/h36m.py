@@ -270,8 +270,8 @@ class H36M(JointDataset):
                 from source.helpers.vis import drawskeleton, show3Dpose
 
                 m = 2  # 1 for MPII joints, 2 for H36M joints
-
-                img = cv2.imread(self.root + gts[n_sample]['image'])
+                img_path = os.path.join(self.root, gts[n_sample]['image'])
+                img = cv2.imread(img_path)
 
                 fig = plt.figure(figsize=(19.2, 10.8))
                 canvas = FigureCanvas(fig)
