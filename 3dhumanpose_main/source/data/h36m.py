@@ -343,17 +343,17 @@ class H36M(JointDataset):
             ]
 
             for name, value in name_value:
-                Logcreator.info(f'Epoch[{epoch}]', self.name, f'-{name} {value}')
+                Logcreator.info(f'Epoch[{epoch}]', self.image_set, f'-{name} {value}')
 
             if writer is not None:
-                writer.add_scalar("MPJPE/" + self.name, mpjpe, epoch)
+                writer.add_scalar("MPJPE/" + self.image_set, mpjpe, epoch)
 
             if comet is not None:
-                comet.log_metric(self.name + '_mpjpe', mpjpe, epoch=epoch)
-                comet.log_metric(self.name + '_mpjpe_14', mpjpe_14, epoch=epoch)
-                comet.log_metric(self.name + '_mpjpe_x', mpjpe_x, epoch=epoch)
-                comet.log_metric(self.name + '_mpjpe_y', mpjpe_y, epoch=epoch)
-                comet.log_metric(self.name + '_mpjpe_z', mpjpe_z, epoch=epoch)
+                comet.log_metric(self.image_set + '_mpjpe', mpjpe, epoch=epoch)
+                comet.log_metric(self.image_set + '_mpjpe_14', mpjpe_14, epoch=epoch)
+                comet.log_metric(self.image_set + '_mpjpe_x', mpjpe_x, epoch=epoch)
+                comet.log_metric(self.image_set + '_mpjpe_y', mpjpe_y, epoch=epoch)
+                comet.log_metric(self.image_set + '_mpjpe_z', mpjpe_z, epoch=epoch)
 
         else:
             name_value = []
