@@ -22,7 +22,7 @@
 3. Edit the configuration file to your needs
     - `vim ./configurations/default.jsonc`
 4. Run job on GPU
-      - `bsub -n 5 -W 24:00 -J "training-job" -R "rusage[mem=2048, ngpus_excl_p=1]" -R "select[gpu_model0>=GeForceRTX2080Ti]" 'python train.py --configuration ./configurations/default.jsonc'`
+      - `bsub -n 5 -W 24:00 -J "training-job" -R "rusage[mem=2048, ngpus_excl_p=1]" -R "select[gpu_model0==GeForceRTX2080Ti]" 'python train.py --configuration ./configurations/default.jsonc'`
       - check job status `bbjobs`
       - peek stdout log `bpeek`
         - `bpeek -f` to actively peek
@@ -32,6 +32,6 @@
 1. Load environment
 2. Navigate to the main project folder `cd 3dhumanpose_main/` 
 3. Run job on GPU
-   - `bsub -n 4 -J "submission-job" -W 4:00 -R "rusage[mem=10240, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=10240]" 'python inference.py --run_folder ./trainings/20210415-181009-default'`
+   - `bsub -n 4 -J "submission-job" -W 0:10 -R "rusage[mem=2048, ngpus_excl_p=1]" -R "select[gpu_mtotal0>=10240]" 'python inference.py --run_folder ./trainings/20210415-181009-default'`
         - change the run folder name to the trainings' folder created during training: `--run_folder ./trainings/20210415-181009-default`
 4. Find the submission file in your run folder
