@@ -1,7 +1,7 @@
 {
     "environment": {
         "name" : "Name of the run - this is just a default config file",
-        "output_path": "trainings", //Creates a folder with name output_path in this folder traininglogs etc. will be saved
+        "output_path": "getenv('OUTPUT_PATH')", //Creates a folder with name output_path in this folder traininglogs etc. will be saved
         "log_file" : "logs.txt" //Name of the log file
     },
     "data_collection" : {
