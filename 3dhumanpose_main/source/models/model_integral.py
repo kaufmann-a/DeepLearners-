@@ -71,7 +71,7 @@ class JointHeatmapDecoder(torch.nn.Module):
         upsample_module_list = []
         for i in range(num_layers):
             upsample_module_list.append(JointHeatmapDeconv2x(in_channels=in_channels if i == 0 else num_filters,
-                                  out_channels=num_filters, kernel_size=kernel_size))
+                                                             out_channels=num_filters, kernel_size=kernel_size))
         self.upsample_features = torch.nn.Sequential(*upsample_module_list)
 
         # TODO: Add configurable "non-bias" end? (see `with_bias_end' in deconv_head.py)
@@ -142,11 +142,7 @@ class ModelIntegralPoseRegression(BaseModel):
     def __init__(self, model_params, dataset_params):
         super().__init__()
         resnet_params = getattr(model_params, str(model_params.resnet_model) + "_params")
-        dataset_specific_params = []
-        for dataset in range(len(dataset_params.dataset)):
-            dataset_specific_params.append(getattr(dataset_params, str(dataset_params.dataset[dataset]) + "_params"))
-
-        NUM_JOINTS = 17  # ToDo: What do we input here? Especially if we train with different datasets??
+        num_joints = model_params.num_joints
 
         self.backbone = BackboneResNet(model_params.resnet_model)
 
@@ -154,7 +150,7 @@ class ModelIntegralPoseRegression(BaseModel):
                                                  num_layers=model_params.num_deconv_layers,
                                                  num_filters=model_params.num_deconv_filters,
                                                  kernel_size=model_params.kernel_size,
-                                                 num_joints=NUM_JOINTS,
+                                                 num_joints=num_joints,
                                                  depth_dim=model_params.depth_dim
                                                  )
         self.joint_regressor = JointIntegralRegressor()
