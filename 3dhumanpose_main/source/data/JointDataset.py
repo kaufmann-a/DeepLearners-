@@ -1,3 +1,4 @@
+import copy
 import os
 
 import numpy as np
@@ -105,26 +106,27 @@ class JointDataset(Dataset):
         return self.db_length
 
     def __getitem__(self, idx):
-        raise NotImplementedError
+        db_rec = copy.deepcopy(self.db[idx])
+        return self.get_data(db_rec, idx)
 
-    def get_data(self, the_db):
-        image_file = os.path.join(self.root, the_db['image'])
+    def get_data(self, db_rec, idx):
+        image_file = os.path.join(self.root, db_rec['image'])
 
-        if 'cam' in the_db:
-            cam = the_db['cam']
+        if 'cam' in db_rec:
+            cam = db_rec['cam']
         else:
             cam = None
 
-        if 'joints_3d_vis' in the_db.keys() and 'joints_3d' in the_db.keys():
-            joints = the_db['joints_3d'].copy()
-            joints_vis = the_db['joints_3d_vis'].copy()
+        if 'joints_3d_vis' in db_rec.keys() and 'joints_3d' in db_rec.keys():
+            joints = db_rec['joints_3d'].copy()
+            joints_vis = db_rec['joints_3d_vis'].copy()
             joints_vis[:, 2] *= self.cfg_general.z_weight  # multiply the z axes of the visibility with z_weight
         else:
             joints = joints_vis = None
 
         img_patch, label, label_weight = get_single_patch_sample(image_file,
-                                                                 the_db['center_x'], the_db['center_y'],
-                                                                 the_db['width'], the_db['height'],
+                                                                 db_rec['center_x'], db_rec['center_y'],
+                                                                 db_rec['width'], db_rec['height'],
                                                                  self.patch_width, self.patch_height,
                                                                  self.rect_3d_width, self.rect_3d_height,
                                                                  self.mean, self.std, self.label_func,
@@ -136,10 +138,12 @@ class JointDataset(Dataset):
 
         meta = {
             'image': image_file,
-            'center_x': the_db['center_x'],
-            'center_y': the_db['center_y'],
-            'width': the_db['width'],
-            'height': the_db['height'],
+            'name': self.name,
+            'idx': idx,
+            'center_x': db_rec['center_x'],
+            'center_y': db_rec['center_y'],
+            'width': db_rec['width'],
+            'height': db_rec['height'],
             'R': cam.R if cam is not None else np.zeros((3, 3), dtype=np.float64),
             'T': cam.T if cam is not None else np.zeros((3, 1), dtype=np.float64),
             'f': cam.f if cam is not None else np.zeros((2, 1), dtype=np.float64),

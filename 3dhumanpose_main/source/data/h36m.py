@@ -57,10 +57,6 @@ class H36M(JointDataset):
 
         Logcreator.info('=> load {} samples'.format(self.db_length))
 
-    def __getitem__(self, idx):
-        db_rec = copy.deepcopy(self.db[idx])
-        return self.get_data(db_rec)
-
     def _get_db(self):
         gt_db = self._get_h36m_db()
 

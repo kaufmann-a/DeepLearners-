@@ -50,10 +50,6 @@ class MPIIDataset(JointDataset):
 
         Logcreator.info('=> load {} samples'.format(self.db_length))
 
-    def __getitem__(self, idx):
-        db_rec = copy.deepcopy(self.db[idx])
-        return self.get_data(db_rec)
-
     def _get_db(self):
         """
         Loads all images according to the chosen image set.
