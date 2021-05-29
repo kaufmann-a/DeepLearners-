@@ -8,10 +8,10 @@
         "folder" : "../data",
         "dataset" : ["h36m", "mpii"],
         "augmentations" : {
-            "scale_factor" : 0,
-            "rotation_factor" : 0,
-            "color_factor": 0,
-            "random_flip" : false,
+            "scale_factor" : 0.125,
+            "rotation_factor" : 15,
+            "color_factor": 0.1,
+            "random_flip" : true,
         },
         "h36m_params" : {
             "train_set": "train",
