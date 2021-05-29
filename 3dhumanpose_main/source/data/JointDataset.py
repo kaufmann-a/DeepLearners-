@@ -66,6 +66,9 @@ class JointDataset(Dataset):
         self.parent_ids = None
         self.flip_pairs = None
 
+        self.parent_ids_super = np.array([0, 0, 1, 2, 0, 4, 5, 0, 8, 8, 9, 8, 11, 12, 8, 14, 15], dtype=np.int)
+        self.flip_pairs_super = np.array([[1, 4], [2, 5], [3, 6], [14, 11], [15, 12], [16, 13]], dtype=np.int)
+
         self.db_length = 0
 
         self.db = []
@@ -125,7 +128,7 @@ class JointDataset(Dataset):
                                                                  self.patch_width, self.patch_height,
                                                                  self.rect_3d_width, self.rect_3d_height,
                                                                  self.mean, self.std, self.label_func,
-                                                                 joint_flip_pairs=self.flip_pairs,
+                                                                 joint_flip_pairs=self.flip_pairs_super,
                                                                  apply_augmentations=self.is_train,
                                                                  augmentation_config=self.augmentations,
                                                                  joints=joints,
