@@ -166,7 +166,9 @@ class Engine:
 
         end = time.time()
 
-        preds_in_patch_with_score = []
+        h36m_preds_in_patch_with_score = []
+        h36m_preds_in_patch_with_score_idx = []
+
         # for all batches
         for batch_idx, data in enumerate(loop):
             # measure data loading time
@@ -217,11 +219,16 @@ class Engine:
 
             del loss
 
-            # update metrics # TODO fix mpjpe score of training dataset -> we have to know if it is a  mpii or h36m sample
-            preds_in_patch_with_score.append(self.result_func(patch_width=self.patch_size[0],
-                                                              patch_height=self.patch_size[1],
-                                                              preds=predictions))
-            del predictions
+            # update metrics
+            preds_with_score = self.result_func(patch_width=self.patch_size[0],
+                                                patch_height=self.patch_size[1],
+                                                preds=predictions)
+            # filter h36m samples
+            h36m_samples_batch_idx = np.asarray(meta["name"]) == "h36m"
+            h36m_preds_in_patch_with_score.append(preds_with_score[h36m_samples_batch_idx])
+
+            h36m_preds_in_patch_with_score_idx.append((meta["idx"][h36m_samples_batch_idx]).detach().cpu().numpy())
+            del predictions, preds_with_score
 
             # measure elapsed time
             batch_time.update(time.time() - end)
@@ -242,7 +249,9 @@ class Engine:
         loop.close()
 
         # to array
-        preds_in_patch_with_score = np.vstack(preds_in_patch_with_score)
+        h36m_preds_in_patch_with_score = np.vstack(h36m_preds_in_patch_with_score)
+        # TODO instead of sorting pass the index to the evaluate function
+        h36m_preds_in_patch_with_score = h36m_preds_in_patch_with_score[np.hstack(h36m_preds_in_patch_with_score_idx)]
 
         train_loss = loss_metric.avg
 
@@ -251,7 +260,7 @@ class Engine:
 
         self.lr_scheduler.step()  # decay learning rate over time
 
-        return train_loss, preds_in_patch_with_score
+        return train_loss, h36m_preds_in_patch_with_score
 
     def validate(self, data_loader, epoch, only_prediction=False):
         """
