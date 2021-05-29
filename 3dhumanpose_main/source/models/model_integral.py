@@ -135,22 +135,27 @@ class JointIntegralRegressor(torch.nn.Module):
 # "Probabilistic selection for which we can derive the expected loss w.r.t. to all learnable parameters."
 # DSAC - Differentiable RANSAC for Camera Localization (https://arxiv.org/abs/1611.05705)
 
+resnet_nr_output_channels = {
+    "resnet18": 512,
+    "resnet34": 512,
+    "resnet50": 2048,
+    "resnet101": 2048,
+    "resnet152": 2048
+}
+
 
 class ModelIntegralPoseRegression(BaseModel):
     name = 'IntegralPoseRegressionModel'
 
     def __init__(self, model_params, dataset_params):
         super().__init__()
-        resnet_params = getattr(model_params, str(model_params.resnet_model) + "_params")
-        num_joints = model_params.num_joints
-
         self.backbone = BackboneResNet(model_params.resnet_model)
 
-        self.joint_decoder = JointHeatmapDecoder(in_channels=resnet_params.channels[-1],
+        self.joint_decoder = JointHeatmapDecoder(in_channels=resnet_nr_output_channels[model_params.resnet_model],
                                                  num_layers=model_params.num_deconv_layers,
                                                  num_filters=model_params.num_deconv_filters,
                                                  kernel_size=model_params.kernel_size,
-                                                 num_joints=num_joints,
+                                                 num_joints=model_params.num_joints,
                                                  depth_dim=model_params.depth_dim
                                                  )
         self.joint_regressor = JointIntegralRegressor()
