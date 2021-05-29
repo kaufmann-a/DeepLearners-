@@ -217,7 +217,7 @@ class Engine:
 
             del loss
 
-            # update metrics
+            # update metrics # TODO fix mpjpe score of training dataset -> we have to know if it is a  mpii or h36m sample
             preds_in_patch_with_score.append(self.result_func(patch_width=self.patch_size[0],
                                                               patch_height=self.patch_size[1],
                                                               preds=predictions))
