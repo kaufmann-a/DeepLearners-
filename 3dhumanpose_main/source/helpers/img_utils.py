@@ -154,7 +154,7 @@ def get_single_patch_sample(img_path, center_x, center_y, width, height,
 
         for n_jt in range(len(joints)):
             joints[n_jt, 0:2] = trans_point2d(joints[n_jt, 0:2], trans)
-            joints[n_jt, 2] = joints[n_jt, 2] / rect_3d_width * patch_width
+            joints[n_jt, 2] = joints[n_jt, 2] / (rect_3d_width * scale) * patch_width
 
         # 5. get label of some type according to certain need
         label, label_weight = label_func(patch_width, patch_height, joints, joints_vis)
