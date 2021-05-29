@@ -30,6 +30,16 @@ def drawskeleton(img, kps, thickness=3, lcolor=(255, 0, 0), rcolor=(0, 0, 255), 
         cv2.line(img, (start[0], start[1]), (end[0], end[1]), lcolor if LR[j] else rcolor, thickness)
 
 
+def cv_draw_joints(im, kpt, vis, flip_pair_ids, color_left=(255, 0, 0), color_right=(0, 255, 0), radius=2):
+    for ipt in range(0, kpt.shape[0]):
+        if vis[ipt, 0]:
+            cv2.circle(im, (int(kpt[ipt, 0] + 0.5), int(kpt[ipt, 1] + 0.5)), radius, color_left, -1)
+    for i in range(0, flip_pair_ids.shape[0]):
+        id = flip_pair_ids[i][0]
+        if vis[id, 0]:
+            cv2.circle(im, (int(kpt[id, 0] + 0.5), int(kpt[id, 1] + 0.5)), radius, color_right, -1)
+
+
 def show3Dpose(channels, ax, radius=40, mpii=2, lcolor='#ff0000', rcolor='#0000ff'):
     vals = channels
 

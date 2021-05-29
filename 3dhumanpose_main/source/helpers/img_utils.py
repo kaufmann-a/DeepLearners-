@@ -102,6 +102,17 @@ def trans_coords_from_patch_to_org_3d(coords_in_patch, c_x, c_y, bb_width, bb_he
     return res_img
 
 
+def debug_vis_patch(img_patch_cv, joints, joints_vis, flip_pairs, window_name="patch_with_gt"):
+    import matplotlib.pyplot as plt
+    from source.helpers.vis import cv_draw_joints
+    cv_img_patch_show = img_patch_cv.copy()
+    cv_draw_joints(cv_img_patch_show, joints, joints_vis, flip_pairs)
+    plt.imshow(cv_img_patch_show)
+    plt.title(window_name)
+    plt.show()
+    plt.close()
+
+
 def get_single_patch_sample(img_path, center_x, center_y, width, height,
                             patch_width, patch_height,
                             rect_3d_width, rect_3d_height, mean, std,
@@ -155,6 +166,9 @@ def get_single_patch_sample(img_path, center_x, center_y, width, height,
         for n_jt in range(len(joints)):
             joints[n_jt, 0:2] = trans_point2d(joints[n_jt, 0:2], trans)
             joints[n_jt, 2] = joints[n_jt, 2] / (rect_3d_width * scale) * patch_width
+
+        if DEBUG:
+            debug_vis_patch(img_patch_cv, joints, joints_vis, joint_flip_pairs)
 
         # 5. get label of some type according to certain need
         label, label_weight = label_func(patch_width, patch_height, joints, joints_vis)
