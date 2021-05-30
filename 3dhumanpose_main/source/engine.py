@@ -251,7 +251,8 @@ class Engine:
         # to array
         h36m_preds_in_patch_with_score = np.vstack(h36m_preds_in_patch_with_score)
         # TODO instead of sorting pass the index to the evaluate function
-        h36m_preds_in_patch_with_score = h36m_preds_in_patch_with_score[np.hstack(h36m_preds_in_patch_with_score_idx)]
+        sorted_idx = np.hstack(h36m_preds_in_patch_with_score_idx).argsort()
+        h36m_preds_in_patch_with_score = h36m_preds_in_patch_with_score[sorted_idx]
 
         train_loss = loss_metric.avg
 
