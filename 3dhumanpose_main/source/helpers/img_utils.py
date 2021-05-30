@@ -20,8 +20,8 @@ def gen_trans_from_patch_cv(c_x, c_y,
     src_center[0] = c_x
     src_center[1] = c_y  # np.array([c_x, c_y], dtype=np.float32)
 
-    src_downdir = np.array([0, src_h * 0.5])
-    src_rightdir = np.array([src_w * 0.5, 0])
+    src_downdir = np.array([0, src_h * 0.5], dtype=np.float32)
+    src_rightdir = np.array([src_w * 0.5, 0], dtype=np.float32)
 
     # augment image with the rotation factor
     rot_rad = np.pi * rot / 180
@@ -199,10 +199,10 @@ def get_augmentation_params(augmentation_config):
     flip_prob = 0.5
 
     # random scale factor (sf) in range: [1.0 - sf, 1.0 + sf]
-    scale = 1.0 + augmentation_config.scale_factor * np.clip(np.random.randn(), a_min=-1.0, a_max=1.0)
+    scale = 1.0 + augmentation_config.scale_factor * np.clip(np.random.randn(), a_min=-1.0, a_max=1.0, dtype=np.float32)
 
     # random rotation factor (rf) in range: rf * [-2.0, 2.0]
-    rotation = augmentation_config.rotation_factor * np.clip(np.random.randn(), a_min=-2.0, a_max=2.0) \
+    rotation = augmentation_config.rotation_factor * np.clip(np.random.randn(), a_min=-2.0, a_max=2.0, dtype=np.float32) \
         if random.random() <= rotation_prob else 0.0
 
     # randomly flip image
