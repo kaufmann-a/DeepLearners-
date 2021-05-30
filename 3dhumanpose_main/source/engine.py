@@ -348,9 +348,12 @@ class Engine:
                     preds_in_img_with_score.append(
                         trans_coords_from_patch_to_org_3d(preds_in_patch_with_score[n_sample],
                                                           imdb_list[n_sample]['center_x'],
-                                                          imdb_list[n_sample]['center_y'], imdb_list[n_sample]['width'],
-                                                          imdb_list[n_sample]['height'], 256, 256,
-                                                          2000, 2000))
+                                                          imdb_list[n_sample]['center_y'],
+                                                          imdb_list[n_sample]['width'],
+                                                          imdb_list[n_sample]['height'],
+                                                          patch_width=self.patch_size[0],
+                                                          patch_height=self.patch_size[1],
+                                                          rect_3d_width=2000, rect_3d_height=2000))
 
                 preds_in_img_with_score = np.asarray(preds_in_img_with_score)
 
