@@ -14,6 +14,8 @@ import os
 import sys
 import time
 
+# noinspection PyUnresolvedReferences
+import comet_ml
 import torch
 
 from source.configuration import Configuration
