@@ -11,7 +11,7 @@ import inspect
 
 import datetime
 from shutil import copy
-
+from Lib.types import SimpleNamespace
 from source.helpers import converter
 from source.helpers import dictionary
 from source.helpers import environmentvariables
@@ -83,6 +83,9 @@ class Configuration(object):
                 if isinstance(value, str):
                     if 'getenv' in value:
                         return eval('os.' + value)
+                if isinstance(value, SimpleNamespace):
+                    getenv_recursive(value)
+                    return value
                 return value
             except:
                 if not optional:
@@ -105,3 +108,14 @@ class Configuration(object):
         if create and not os.path.exists(path):
             os.makedirs(path)
         return path
+
+
+def getenv_recursive(value):
+    for element in value.__dict__:
+        if isinstance(value.__dict__[element], SimpleNamespace):
+            getenv_recursive(value.__dict__[element])
+        else:
+            if isinstance(value.__dict__[element], str):
+                if 'getenv' in value.__dict__[element]:
+                    value.__dict__[element] = eval('os.' + value.__dict__[element])
+
