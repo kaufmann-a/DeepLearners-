@@ -14,13 +14,13 @@
             "random_flip" : false,
         },
         "h36m_params" : {
-            "train_set": "train",
+            "train_set": "trainval",
             "val_set": "val",
             "num_joints" : 17,
             "num_cams": 4,
         },
          "mpii_params" : {
-            "train_set": "train",
+            "train_set": "trainval",
             "val_set": "valid",
             "num_joints" : 16,
             "num_cams": 1,
