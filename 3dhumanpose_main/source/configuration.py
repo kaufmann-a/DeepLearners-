@@ -8,10 +8,11 @@ __email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, kbouchiat@stu
 import commentjson
 import os
 import inspect
+import sys
 
 import datetime
 from shutil import copy
-from Lib.types import SimpleNamespace
+from types import SimpleNamespace
 from source.helpers import converter
 from source.helpers import dictionary
 from source.helpers import environmentvariables
@@ -108,6 +109,8 @@ class Configuration(object):
         if create and not os.path.exists(path):
             os.makedirs(path)
         return path
+
+
 
 
 def getenv_recursive(value):
