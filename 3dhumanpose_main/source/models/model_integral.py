@@ -100,15 +100,25 @@ class JointHeatmapUpsample2x(torch.nn.Sequential):
 
 
 class JointHeatmapDecoder(torch.nn.Module):
-    def __init__(self, in_channels, num_layers, num_filters, kernel_size, num_joints, depth_dim):
+    def __init__(self, res_net, num_layers, num_filters, kernel_size, num_joints, depth_dim):
         super().__init__()
+
+        resnet_nr_output_channels = {
+            "resnet18": 512,
+            "resnet34": 512,
+            "resnet50": 2048,
+            "resnet101": 2048,
+            "resnet152": 2048
+        }
+
+        self.in_channels = resnet_nr_output_channels[res_net]
         self.num_joints = num_joints
         self.depth_dim = depth_dim
 
         # TODO: Add configurable Upsample2x as an alternative to Deconv2x?
         upsample_module_list = []
         for i in range(num_layers):
-            upsample_module_list.append(JointHeatmapDeconv2x(in_channels=in_channels if i == 0 else num_filters,
+            upsample_module_list.append(JointHeatmapDeconv2x(in_channels=self.in_channels if i == 0 else num_filters,
                                                              out_channels=num_filters, kernel_size=kernel_size))
         self.upsample_features = torch.nn.Sequential(*upsample_module_list)
 
@@ -173,21 +183,9 @@ class JointIntegralRegressor(torch.nn.Module):
 # "Probabilistic selection for which we can derive the expected loss w.r.t. to all learnable parameters."
 # DSAC - Differentiable RANSAC for Camera Localization (https://arxiv.org/abs/1611.05705)
 
-resnet_nr_output_channels = {
-    "resnet18": 512,
-    "resnet34": 512,
-    "resnet50": 2048,
-    "resnet101": 2048,
-    "resnet152": 2048
-}
 
-model_urls = {
-    'resnet18': 'https://s3.amazonaws.com/pytorch/models/resnet18-5c106cde.pth',
-    'resnet34': 'https://s3.amazonaws.com/pytorch/models/resnet34-333f7ec4.pth',
-    'resnet50': 'https://s3.amazonaws.com/pytorch/models/resnet50-19c8e357.pth',
-    'resnet101': 'https://s3.amazonaws.com/pytorch/models/resnet101-5d3b4d8f.pth',
-    'resnet152': 'https://s3.amazonaws.com/pytorch/models/resnet152-b121ed2d.pth',
-}
+
+
 
 
 class ModelIntegralPoseRegression(BaseModel):
@@ -196,9 +194,9 @@ class ModelIntegralPoseRegression(BaseModel):
     def __init__(self, model_params, dataset_params):
         super().__init__()
 
-        self.backbone = ResNetCustom(model_params.resnet_model)
+        self.backbone = self.getPretrainedResnet(model_params, pretrained=True)
 
-        self.joint_decoder = JointHeatmapDecoder(in_channels=resnet_nr_output_channels[model_params.resnet_model],
+        self.joint_decoder = JointHeatmapDecoder(res_net=model_params.resnet_model,
                                                  num_layers=model_params.num_deconv_layers,
                                                  num_filters=model_params.num_deconv_filters,
                                                  kernel_size=model_params.kernel_size,
@@ -207,6 +205,21 @@ class ModelIntegralPoseRegression(BaseModel):
                                                  )
         self.joint_regressor = JointIntegralRegressor()
         Logcreator.info("Successfully initialized model with name IntegralPoseRegressionModel successfully initialized")
+
+    def getPretrainedResnet(self, model_params, pretrained=True):
+        model = ResNetCustom(model_params.resnet_model)
+
+        model_urls = {
+            'resnet18': 'https://s3.amazonaws.com/pytorch/models/resnet18-5c106cde.pth',
+            'resnet34': 'https://s3.amazonaws.com/pytorch/models/resnet34-333f7ec4.pth',
+            'resnet50': 'https://s3.amazonaws.com/pytorch/models/resnet50-19c8e357.pth',
+            'resnet101': 'https://s3.amazonaws.com/pytorch/models/resnet101-5d3b4d8f.pth',
+            'resnet152': 'https://s3.amazonaws.com/pytorch/models/resnet152-b121ed2d.pth',
+        }
+
+        if pretrained:
+            model.load_state_dict(model_zoo.load_url(model_urls[model_params.resnet_model]))
+        return model
 
     def forward(self, input):
         features = self.backbone(input)
