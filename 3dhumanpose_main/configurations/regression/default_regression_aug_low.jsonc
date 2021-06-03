@@ -12,6 +12,9 @@
             "rotation_factor" : 15,
             "color_factor": 0.1,
             "random_flip" : true,
+            "voc_occluder_datapath" : "getenv('VOC_DATASET')",
+            "voc_occluder" : false,
+            "voc_occluder_p" : 0.5,
         },
         "h36m_params" : {
             "train_set": "train",
