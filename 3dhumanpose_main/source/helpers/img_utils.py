@@ -5,7 +5,8 @@ import numpy as np
 import torch
 
 from source.helpers.transforms import get_2d_rotation
-
+import source.helpers.voc_occluder_helper as voc_occluders
+from source.exceptions.configurationerror import VOC_OccluderError
 
 def gen_trans_from_patch_cv(c_x, c_y,
                             src_width, src_height,
@@ -113,7 +114,7 @@ def debug_vis_patch(img_patch_cv, joints, joints_vis, flip_pairs, window_name="p
     plt.close()
 
 
-def get_single_patch_sample(img_path, center_x, center_y, width, height,
+def get_single_patch_sample(joint_dataset_obj, img_path, center_x, center_y, width, height,
                             patch_width, patch_height,
                             rect_3d_width, rect_3d_height, mean, std,
                             label_func,
@@ -139,6 +140,13 @@ def get_single_patch_sample(img_path, center_x, center_y, width, height,
         rotation = 0.0
         apply_random_flip = False
         color_scale = [1.0, 1.0, 1.0]
+
+    if augmentation_config.voc_occluder:
+        if np.random.uniform(0.0, 1.0) < augmentation_config.voc_occluder_p:
+            try:
+                cvimg = voc_occluders.occlude_with_objects(cvimg, joint_dataset_obj.occluders)
+            except:
+                raise VOC_OccluderError(joint_dataset_obj.occluders)
 
     # 3. generate image patch
     img_patch_cv, trans = generate_patch_image_cv(cvimg, center_x, center_y, width, height, patch_width, patch_height,

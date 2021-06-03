@@ -5,7 +5,7 @@ import numpy as np
 from torch.utils.data import Dataset
 
 from source.helpers.img_utils import get_single_patch_sample
-
+import source.helpers.voc_occluder_helper as voc_occluders
 
 class JointDataset(Dataset):
     # the unified joints name to idx mapping if we combine datasets
@@ -74,6 +74,11 @@ class JointDataset(Dataset):
 
         self.db = []
 
+        self.occluders = None
+        #Prepare voc occluders if used in training
+        if self.augmentations.voc_occluder:
+            self.occluders = voc_occluders.load_occluders(self.augmentations.voc_occluder_datapath)
+
     def get_joint_mapping(self, actual_joints):
         union_keys = list(self.union_joints.keys())
         union_values = list(self.union_joints.values())
@@ -124,7 +129,7 @@ class JointDataset(Dataset):
         else:
             joints = joints_vis = None
 
-        img_patch, label, label_weight = get_single_patch_sample(image_file,
+        img_patch, label, label_weight = get_single_patch_sample(self, image_file,
                                                                  db_rec['center_x'], db_rec['center_y'],
                                                                  db_rec['width'], db_rec['height'],
                                                                  self.patch_width, self.patch_height,
