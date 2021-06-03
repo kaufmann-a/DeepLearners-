@@ -5,7 +5,9 @@ import numpy as np
 from torch.utils.data import Dataset
 
 from source.helpers.img_utils import get_single_patch_sample
+from source.logcreator.logcreator import Logcreator
 import source.helpers.voc_occluder_helper as voc_occluders
+import source.exceptions.configurationerror as cfgerror
 
 class JointDataset(Dataset):
     # the unified joints name to idx mapping if we combine datasets
@@ -77,7 +79,10 @@ class JointDataset(Dataset):
         self.occluders = None
         #Prepare voc occluders if used in training
         if self.augmentations.voc_occluder:
-            self.occluders = voc_occluders.load_occluders(self.augmentations.voc_occluder_datapath)
+            try:
+                self.occluders = voc_occluders.load_occluders(self.augmentations.voc_occluder_datapath)
+            except:
+                Logcreator.error("Occluder could not be initialized, training will be performed without occluder")
 
     def get_joint_mapping(self, actual_joints):
         union_keys = list(self.union_joints.keys())

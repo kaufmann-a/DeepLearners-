@@ -142,7 +142,7 @@ def get_single_patch_sample(joint_dataset_obj, img_path, center_x, center_y, wid
         color_scale = [1.0, 1.0, 1.0]
 
     if apply_augmentations and augmentation_config.voc_occluder:
-        if np.random.uniform(0.0, 1.0) < augmentation_config.voc_occluder_p:
+        if np.random.uniform(0.0, 1.0) < augmentation_config.voc_occluder_p and joint_dataset_obj.occluders is not None:
             try:
                 cvimg = voc_occluders.occlude_with_objects(cvimg, joint_dataset_obj.occluders)
             except:
