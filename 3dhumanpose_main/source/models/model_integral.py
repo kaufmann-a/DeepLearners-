@@ -196,7 +196,7 @@ class ModelIntegralPoseRegression(BaseModel):
     def __init__(self, model_params, dataset_params):
         super().__init__()
 
-        self.backbone = ResNetCustom(model_params.resnet_model).load_state_dict(model_zoo.load_url(model_urls[model_params.resnet_model]))
+        self.backbone = ResNetCustom(model_params.resnet_model)
 
         self.joint_decoder = JointHeatmapDecoder(in_channels=resnet_nr_output_channels[model_params.resnet_model],
                                                  num_layers=model_params.num_deconv_layers,
