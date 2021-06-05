@@ -402,7 +402,7 @@ class Engine:
 
     def load_checkpoints(self, path=None):
         Logcreator.info("Loading checkpoint file:", path)
-        checkpoint = torch.load(path)
+        checkpoint = torch.load(path, map_location=DEVICE)
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         self.lr_scheduler.load_state_dict(checkpoint['lr_scheduler_state_dict'])
