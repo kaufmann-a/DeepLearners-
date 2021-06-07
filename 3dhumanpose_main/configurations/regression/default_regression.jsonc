@@ -41,7 +41,7 @@
             "log_to_comet" : true,
         },
         "model": {
-            "name": "IntegralPoseRegressionModel",  //  ResPoseNet_Regression, PoseAlexNetReg
+            "name": "IntegralPoseRegressionModel",
             "num_joints" : 17,
             "resnet_model" : "resnet50", //"resnet18", "resnet34", "resnet101", "resnet152"
             "num_deconv_layers" : 3,
