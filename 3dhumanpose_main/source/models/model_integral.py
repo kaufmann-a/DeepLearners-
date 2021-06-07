@@ -3,10 +3,12 @@ import math
 import torch
 import torch.nn.functional as F
 import torch.utils.model_zoo as model_zoo
+from torch import nn
 from torchvision.models.resnet import BasicBlock, Bottleneck
 
 from source.logcreator.logcreator import Logcreator
 from source.models.basemodel import BaseModel
+from source.models.bottelneck_transformer_pytorch import BottleStack
 from source.models.modules import PPM, ASPP
 
 
@@ -194,6 +196,27 @@ class ModelIntegralPoseRegression(BaseModel):
         self.backbone = self.getPretrainedResnet(model_params, pretrained=True)
 
         num_in_channels = self.resnet_nr_output_channels[model_params.resnet_model]
+
+        if hasattr(model_params, "use_bot_net") and model_params.use_bot_net:
+            layer = BottleStack(
+                dim=1024,  # TODO adjust for different resnets
+                fmap_size=16,  # TODO adjust for different resnets
+                dim_out=num_in_channels,
+                proj_factor=4,
+                num_layers=3,  # TODO adjust for different resnets
+                downsample=True,  # downsample on first layer
+                heads=4,
+                dim_head=128,
+                rel_pos_emb=True,  # use relative positional embedding
+                activation=nn.ReLU()
+            )
+
+            resnet_layers = list(self.backbone.children())
+
+            self.backbone = nn.Sequential(
+                *resnet_layers[:7],
+                layer
+            )
 
         self.bottleneck = None
         if hasattr(model_params, "bottleneck"):
