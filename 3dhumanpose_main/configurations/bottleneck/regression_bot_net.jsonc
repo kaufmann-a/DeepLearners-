@@ -46,7 +46,7 @@
         "model": {
             "name": "IntegralPoseRegressionModel",  //  ResPoseNet_Regression, PoseAlexNetReg
             "num_joints" : 17,
-            "use_bot_net" : false,
+            "use_bot_net" : true,
             "resnet_model" : "resnet50", //"resnet18", "resnet34", "resnet101", "resnet152"
             "num_deconv_layers" : 3,
             "num_deconv_filters" : 256,
