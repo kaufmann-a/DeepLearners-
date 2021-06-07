@@ -194,7 +194,6 @@ class Engine:
             else:
                 loss = loss_rv
 
-            self.optimizer.zero_grad()  # TODO: They use it also twice in original code why ?
             loss.backward()
             self.optimizer.step()
 
