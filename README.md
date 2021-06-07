@@ -18,7 +18,7 @@
 
 ## Run training
 1. Load environment
-2. Navigate to the road segmentation folder `cd 3dhumanpose_main/`
+2. Navigate to the human pose main folder `cd 3dhumanpose_main/`
 3. Edit the configuration file to your needs
     - `vim ./configurations/default.jsonc`
 4. Run job on GPU
