@@ -1,9 +1,8 @@
-import os
 import torch
 import torch.nn as nn
 
 from source.models.basemodel import BaseModel
-from source.logcreator.logcreator import Logcreator
+
 
 class PoseAlexNetReg(BaseModel):
     name = 'PoseAlexNetReg'

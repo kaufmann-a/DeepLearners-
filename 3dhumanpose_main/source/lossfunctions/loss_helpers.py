@@ -3,7 +3,6 @@ from functools import partial
 import numpy as np
 
 from source.configuration import Configuration
-from source.lossfunctions.loss import integral
 
 
 def get_label_func():
@@ -45,10 +44,6 @@ def generate_joint_location_label(patch_width, patch_height, joints, joints_vis,
 def get_result_func():
     # TODO Refactor: Move code into respective loss function and return this function with the loss function
     loss_cfg = Configuration.get('training.loss', optional=False)
-    if loss_cfg.loss_function == "IntegralJointLocationLoss":
-        func = integral.get_result_func(loss_cfg)
-        # partially apply function (because it has additionally a config parameter)
-        return partial(func, config=loss_cfg)
     if loss_cfg.loss_function == "JointMultiLoss":
         return get_integral_joint_location_result
     return get_joint_regression_result
