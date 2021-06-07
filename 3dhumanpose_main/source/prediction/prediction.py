@@ -15,18 +15,6 @@ from source.configuration import Configuration
 from source.data.datasetfactory import DataSetFactory
 
 
-class AttrWrapper(object):
-    """
-    https://stackoverflow.com/questions/6082625/python-dynamically-add-attributes-to-new-style-class-obj
-    """
-
-    def __init__(self, wrapped):
-        self._wrapped = wrapped
-
-    def __getattr__(self, n):
-        return getattr(self._wrapped, n)
-
-
 class Prediction(object):
 
     def __init__(self, engine, device):
@@ -38,7 +26,8 @@ class Prediction(object):
         self.engine = engine
         self.device = device
 
-    def get_dataset_config(self):
+    @staticmethod
+    def get_dataset_config():
         """
         TODO Very ugly; Probably better to ad a parameter for the test set name or ...?
 
@@ -48,13 +37,10 @@ class Prediction(object):
 
         """
         dataset_config = Configuration.get('data_collection')
+        dataset_config.dataset = ['h36m']
+        dataset_config.h36m_params.val_set = "test"
 
-        cfg = AttrWrapper(dataset_config)
-        cfg.dataset = ['h36m']
-        cfg.h36m_params = AttrWrapper(dataset_config.h36m_params)
-        cfg.h36m_params.val_set = "test"
-
-        return cfg
+        return dataset_config
 
     def predict(self):
         cfg = self.get_dataset_config()
