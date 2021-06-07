@@ -397,7 +397,8 @@ class Engine:
 
     def print_modelsummary(self):
         image_size = Configuration.get("data_collection.image_size")
-        input_size = tuple(np.insert(image_size, 0, values=3))
+        image_size = image_size[::-1]  # reversed to get H x W
+        input_size = tuple(np.insert(image_size, 0, values=3))  # C x H x W
 
         Logcreator.debug(self.model)
 
