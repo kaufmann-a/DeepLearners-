@@ -104,18 +104,24 @@ class JointHeatmapUpsample2x(torch.nn.Sequential):
 
 
 class JointHeatmapDecoder(torch.nn.Module):
-    def __init__(self, num_in_channels, num_layers, num_filters, kernel_size, num_joints, depth_dim):
+    def __init__(self, num_in_channels, num_layers, num_filters, kernel_size, num_joints, depth_dim, upsample2x=False):
         super().__init__()
 
         self.in_channels = num_in_channels
         self.num_joints = num_joints
         self.depth_dim = depth_dim
 
-        # TODO: Add configurable Upsample2x as an alternative to Deconv2x?
         upsample_module_list = []
         for i in range(num_layers):
-            upsample_module_list.append(JointHeatmapDeconv2x(in_channels=self.in_channels if i == 0 else num_filters,
-                                                             out_channels=num_filters, kernel_size=kernel_size))
+            in_channels = self.in_channels if i == 0 else num_filters
+            if upsample2x:
+                upsample_module_list.append(
+                    JointHeatmapUpsample2x(in_channels=in_channels, out_channels=num_filters))
+            else:
+                # transposed convolution
+                upsample_module_list.append(
+                    JointHeatmapDeconv2x(in_channels=in_channels, out_channels=num_filters, kernel_size=kernel_size))
+
         self.upsample_features = torch.nn.Sequential(*upsample_module_list)
 
         # TODO: Add configurable "non-bias" end? (see `with_bias_end' in deconv_head.py)
@@ -127,7 +133,7 @@ class JointHeatmapDecoder(torch.nn.Module):
     def _init_weights(module):
         if isinstance(module, torch.nn.Conv2d):
             torch.nn.init.normal_(module.weight, mean=0, std=0.001)
-            if hasattr(module, 'bias'):
+            if hasattr(module, 'bias') and module.bias is not None:
                 torch.nn.init.constant_(module.bias, 0)
 
         elif isinstance(module, torch.nn.BatchNorm2d):
@@ -247,7 +253,9 @@ class ModelIntegralPoseRegression(BaseModel):
                                                  num_filters=model_params.num_deconv_filters,
                                                  kernel_size=model_params.kernel_size,
                                                  num_joints=model_params.num_joints,
-                                                 depth_dim=model_params.depth_dim
+                                                 depth_dim=model_params.depth_dim,
+                                                 upsample2x=model_params.deconv_use_upsample if hasattr(model_params,
+                                                                                                        "deconv_use_upsample") else False
                                                  )
         self.joint_regressor = JointIntegralRegressor()
         Logcreator.info("Successfully initialized model with name IntegralPoseRegressionModel successfully initialized")
