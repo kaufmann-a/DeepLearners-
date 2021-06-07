@@ -1,9 +1,10 @@
-
+import glob
 import os
 from comet_ml import Experiment
 from torch.utils.tensorboard import SummaryWriter
 from source.configuration import Configuration
 from source.logcreator.logcreator import Logcreator
+
 
 def init_comet():
     if not Configuration.get('training.general.log_to_comet'):
@@ -25,6 +26,9 @@ def init_comet():
         )
         experiment.set_name(os.path.basename(os.path.normpath(Configuration.output_directory)))
         experiment.add_tag(Configuration.get('training.model.name'))
+        tags = Configuration.get('training.general.comet.tags', optional=True, default=None)
+        if tags is not None:
+            experiment.add_tags(tags)
 
         parameters = Configuration.get('training')
         data_collection_params = Configuration.get('data_collection')
@@ -40,6 +44,12 @@ def init_comet():
         experiment.log_parameter("Optimizer-LR", parameters.optimizer.beta2)
         experiment.log_parameter("lr-sched.", parameters.lr_scheduler.name)
 
+        try:
+            cfg_file = glob.glob(os.path.join(Configuration.output_directory, '*.jsonc'))[0]
+            experiment.log_code(cfg_file)
+        except:
+            Logcreator.error("Upload of config file failed")
+
         return experiment
     except ValueError:
         Logcreator.error("Comet initialization was not successful, the following information was missing:")
@@ -52,4 +62,3 @@ def init_comet():
         Logcreator.error("Pleas add the missing parameters to a file called .env")
         Logcreator.info("Training now continues without logging to Comet")
         return None
-
