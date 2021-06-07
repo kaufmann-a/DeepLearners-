@@ -1,26 +1,28 @@
+import math
+
 import torch
 import torch.nn.functional as F
-import torchvision
-import math
-from source.models.basemodel import BaseModel
-from source.logcreator.logcreator import Logcreator
-from torchvision.models.resnet import BasicBlock, Bottleneck
 import torch.utils.model_zoo as model_zoo
+from torchvision.models.resnet import BasicBlock, Bottleneck
+
+from source.logcreator.logcreator import Logcreator
+from source.models.basemodel import BaseModel
+from source.models.modules import PPM, ASPP
+
 
 class ResNetCustom(torch.nn.Module):
     def __init__(self, type, num_classes=1000):
 
-
         self.resnet = {'resnet18': {'block': BasicBlock, 'layers': [2, 2, 2, 2]},
-               'resnet34': {'block': BasicBlock, 'layers': [3, 4, 6, 3]},
-               'resnet50': {'block': Bottleneck, 'layers': [3, 4, 6, 3]},
-               'resnet101': {'block': Bottleneck, 'layers': [3, 4, 23, 3]},
-               'resnet152': {'block': Bottleneck, 'layers': [3, 8, 36, 3]}}[type]
+                       'resnet34': {'block': BasicBlock, 'layers': [3, 4, 6, 3]},
+                       'resnet50': {'block': Bottleneck, 'layers': [3, 4, 6, 3]},
+                       'resnet101': {'block': Bottleneck, 'layers': [3, 4, 23, 3]},
+                       'resnet152': {'block': Bottleneck, 'layers': [3, 8, 36, 3]}}[type]
 
         self.inplanes = 64
         super(ResNetCustom, self).__init__()
         self.conv1 = torch.nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3,
-                               bias=False)
+                                     bias=False)
         self.bn1 = torch.nn.BatchNorm2d(64)
         self.relu = torch.nn.ReLU(inplace=True)
         self.maxpool = torch.nn.MaxPool2d(kernel_size=3, stride=2, padding=1)
@@ -100,18 +102,10 @@ class JointHeatmapUpsample2x(torch.nn.Sequential):
 
 
 class JointHeatmapDecoder(torch.nn.Module):
-    def __init__(self, res_net, num_layers, num_filters, kernel_size, num_joints, depth_dim):
+    def __init__(self, num_in_channels, num_layers, num_filters, kernel_size, num_joints, depth_dim):
         super().__init__()
 
-        resnet_nr_output_channels = {
-            "resnet18": 512,
-            "resnet34": 512,
-            "resnet50": 2048,
-            "resnet101": 2048,
-            "resnet152": 2048
-        }
-
-        self.in_channels = resnet_nr_output_channels[res_net]
+        self.in_channels = num_in_channels
         self.num_joints = num_joints
         self.depth_dim = depth_dim
 
@@ -184,19 +178,48 @@ class JointIntegralRegressor(torch.nn.Module):
 # DSAC - Differentiable RANSAC for Camera Localization (https://arxiv.org/abs/1611.05705)
 
 
-
-
-
-
 class ModelIntegralPoseRegression(BaseModel):
     name = 'IntegralPoseRegressionModel'
+    resnet_nr_output_channels = {
+        "resnet18": 512,
+        "resnet34": 512,
+        "resnet50": 2048,
+        "resnet101": 2048,
+        "resnet152": 2048
+    }
 
     def __init__(self, model_params, dataset_params):
         super().__init__()
 
         self.backbone = self.getPretrainedResnet(model_params, pretrained=True)
 
-        self.joint_decoder = JointHeatmapDecoder(res_net=model_params.resnet_model,
+        num_in_channels = self.resnet_nr_output_channels[model_params.resnet_model]
+
+        self.bottleneck = None
+        if hasattr(model_params, "bottleneck"):
+            if model_params.bottleneck.method == "PPM":
+                bins = model_params.bottleneck.bins
+                concat_input = True
+                reduction_dim = num_in_channels // len(bins)
+                out_dim = reduction_dim * len(bins) + (num_in_channels if concat_input else 0)
+
+                self.bottleneck = PPM(in_dim=num_in_channels,
+                                      reduction_dim=reduction_dim,
+                                      bins=bins,
+                                      concat_input=concat_input)
+                num_in_channels = out_dim
+
+            elif model_params.bottleneck.method == "ASPP":
+                out_dim = int(num_in_channels * model_params.bottleneck.out_dim_factor)
+
+                self.bottleneck = ASPP(in_dims=num_in_channels,
+                                       out_dims=out_dim,
+                                       dilation=model_params.bottleneck.dilation,
+                                       use_bn_relu_out=True,
+                                       use_global_avg_pooling=model_params.bottleneck.use_global_avg_pooling)
+                num_in_channels = out_dim
+
+        self.joint_decoder = JointHeatmapDecoder(num_in_channels=num_in_channels,
                                                  num_layers=model_params.num_deconv_layers,
                                                  num_filters=model_params.num_deconv_filters,
                                                  kernel_size=model_params.kernel_size,
@@ -223,9 +246,9 @@ class ModelIntegralPoseRegression(BaseModel):
 
     def forward(self, input):
         features = self.backbone(input)
+        if self.bottleneck is not None:
+            features = self.bottleneck(features)
         heatmaps = self.joint_decoder(features)
         joints = self.joint_regressor(heatmaps)
 
         return heatmaps, joints
-
-

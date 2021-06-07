@@ -49,14 +49,13 @@ class ASPP(nn.Module):
              https://github.com/jfzhang95/pytorch-deeplab-xception/blob/master/modeling/aspp.py
     """
 
-    def __init__(self, in_dims, out_dims, use_bn_relu_out=False, use_global_avg_pooling=True):
+    def __init__(self, in_dims, out_dims,
+                 kernels=[1, 3, 3, 3], dilation=[1, 6, 12, 18],
+                 use_bn_relu_out=False, use_global_avg_pooling=True):
         super(ASPP, self).__init__()
 
         self.out_dims = out_dims
         self.use_global_avg_pooling = use_global_avg_pooling
-
-        kernels = [1, 3, 3, 3]
-        dilation = [1, 6, 12, 18]
 
         # hardcoded blocks so that _init_weights() works (probably there is a better method)
         self.aspp_block_1 = self.get_aspp_block(in_dims, out_dims, kernels[0], 0, dilation[0])
