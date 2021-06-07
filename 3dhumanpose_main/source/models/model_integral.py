@@ -204,9 +204,12 @@ class ModelIntegralPoseRegression(BaseModel):
         num_in_channels = self.resnet_nr_output_channels[model_params.resnet_model]
 
         if hasattr(model_params, "use_bot_net") and model_params.use_bot_net:
+            fmap_size = [v // (2 ** 4) for v in dataset_params.image_size]  # might not work for all sizes
+            fmap_size = fmap_size[::-1]  # reverse to get H x W
+            fmap_size = tuple(fmap_size)
             layer = BottleStack(
                 dim=num_in_channels // 2,
-                fmap_size=tuple([v // (2 ** 4) for v in dataset_params.image_size]),  # might not work for all sizes
+                fmap_size=fmap_size,
                 dim_out=num_in_channels,
                 proj_factor=4,
                 num_layers=3,
