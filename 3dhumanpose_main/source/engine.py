@@ -333,7 +333,8 @@ class Engine:
                                                           imdb_list[n_sample]['height'],
                                                           patch_width=self.patch_size[0],
                                                           patch_height=self.patch_size[1],
-                                                          rect_3d_width=2000, rect_3d_height=2000))
+                                                          rect_3d_width=2000,
+                                                          rect_3d_height=2000))  # TODO twice hardcoded, see JointDataset
 
                 preds_in_img_with_score = np.asarray(preds_in_img_with_score)
 
