@@ -122,25 +122,25 @@ class Engine:
                           writer_dict=False)
 
             val_loss, preds_in_patch_with_score = self.validate(valid_loader, epoch)
-            acc = self.evaluate(epoch, preds_in_patch_with_score, valid_loader,
-                                final_output_path=None,
-                                debug=False,
-                                writer_dict=False)
+            mpjpe = self.evaluate(epoch, preds_in_patch_with_score, valid_loader,
+                                  final_output_path=None,
+                                  debug=False,
+                                  writer_dict=False)
 
-            # TODO: set dataset in config
-            # perf_indicator = 500. - acc if config.DATASET.DATASET == 'h36m' or 'mpii_3dhp' or 'jta' else acc
-            perf_indicator = 500. - acc if 'h36m' == 'h36m' or 'mpii_3dhp' or 'jta' else acc
+            # convert mpjpe into a greater is better metric
+            perfect_indicator = 500. - mpjpe
 
-            if perf_indicator > best_perf:
-                best_perf = perf_indicator
-                best_model = True  # TODO save the best model separately (start saving after 30 epochs)
-            else:
-                best_model = False
+            best_model = False
+            if perfect_indicator > best_perf:
+                best_perf = perfect_indicator
+                best_model = True
 
-            # TODO check if saving works and extend according to original code (save best model, ...)
             # save model
-            if (epoch % train_parms.checkpoint_save_interval == train_parms.checkpoint_save_interval - 1) or (
-                    epoch + 1 == train_parms.num_epochs and DEVICE == "cuda"):
+            if (epoch % train_parms.checkpoint_save_interval == train_parms.checkpoint_save_interval - 1) \
+                    or (epoch + 1 == train_parms.num_epochs and DEVICE == "cuda") \
+                    or ((epoch >= 39) and best_model):
+                if best_model:
+                    Logcreator.info("Saving new best model", epoch)
                 self.save_model(epoch)
                 self.save_checkpoint(epoch, train_loss, val_loss)
 
@@ -359,22 +359,22 @@ class Engine:
 
                 # Evaluate
                 if 'joints_3d' in imdb.db[0].keys():
-                    name_value, perf = imdb.evaluate(preds_in_img_with_score.copy(), final_output_path,
-                                                     debug=debug,
-                                                     epoch=epoch,
-                                                     writer=self.writer,
-                                                     comet=self.comet,
-                                                     writer_dict=writer_dict)
+                    name_value, mpjpe = imdb.evaluate(preds_in_img_with_score.copy(), final_output_path,
+                                                      debug=debug,
+                                                      epoch=epoch,
+                                                      writer=self.writer,
+                                                      comet=self.comet,
+                                                      writer_dict=writer_dict)
                 else:
-                    Logcreator.info('Test set is used, saving results to %s', final_output_path)
-                    _, perf = imdb.evaluate(preds_in_img_with_score.copy(), final_output_path,
-                                            debug=debug,
-                                            writer_dict=writer_dict)
-                    perf = 0.0
+                    Logcreator.info('Test set is used, saving results to:', final_output_path)
+                    _, mpjpe = imdb.evaluate(preds_in_img_with_score.copy(), final_output_path,
+                                             debug=debug,
+                                             writer_dict=writer_dict)
+                    mpjpe = 0.0
 
-                Logcreator.info("Mean per joint position error", perf)
+                Logcreator.info("Mean per joint position error", mpjpe)
 
-                return perf
+                return mpjpe
 
         return 0.0
 
