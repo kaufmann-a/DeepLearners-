@@ -173,18 +173,19 @@ class Engine:
 
             batch_data, batch_label, batch_label_weight, meta = data
 
-            self.optimizer.zero_grad()
-
             batch_data = batch_data.to(DEVICE)
             batch_label = batch_label.to(DEVICE)
             batch_label_weight = batch_label_weight.to(DEVICE)
 
             batch_size = batch_data.size(0)
 
-            # runs the forward pass with autocasting (improve performance while maintaining accuracy)
-            # with torch.cuda.amp.autocast():
+            # zero the gradients
+            self.optimizer.zero_grad()
+
+            # forward
             predictions = self.model(batch_data)
 
+            # compute loss
             loss_rv = self.loss_function(predictions, batch_label, batch_label_weight)
             del batch_data, batch_label, batch_label_weight
 
@@ -194,6 +195,7 @@ class Engine:
             else:
                 loss = loss_rv
 
+            # backward
             loss.backward()
             self.optimizer.step()
 
