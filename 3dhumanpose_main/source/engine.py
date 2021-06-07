@@ -52,7 +52,6 @@ class Engine:
         self.optimizer = OptimizerFactory.build(self.model)
         self.lr_scheduler = LRSchedulerFactory.build(self.optimizer)
         self.loss_function = LossFunctionFactory.build(self.model).to(DEVICE)
-        # self.scaler = torch.cuda.amp.GradScaler()  # I assumed we always use gradscaler, thus no factory for this
 
         self.patch_size = Configuration.get("data_collection.image_size")
         self.result_func = get_result_func()
@@ -195,15 +194,9 @@ class Engine:
             else:
                 loss = loss_rv
 
-            # backward according to https://pytorch.org/docs/stable/notes/amp_examples.html#amp-examples
-            if False:  # TODO: do we use scaler?
-                self.scaler.scale(loss).backward()
-                self.scaler.step(self.optimizer)
-                self.scaler.update()
-            else:
-                self.optimizer.zero_grad()  # TODO: They use it also twice in original code why ?
-                loss.backward()
-                self.optimizer.step()
+            self.optimizer.zero_grad()  # TODO: They use it also twice in original code why ?
+            loss.backward()
+            self.optimizer.step()
 
             # update loss
             # record loss
