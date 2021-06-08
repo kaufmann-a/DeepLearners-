@@ -115,9 +115,7 @@ class Engine:
             Logcreator.info(f"Epoch {epoch}, lr: {self.get_lr():.3e}, lr-step: {self.lr_scheduler.last_epoch}")
 
             train_loss, preds_in_patch_with_score = self.train_step(train_loader, epoch)
-            self.evaluate(epoch, preds_in_patch_with_score, train_loader,
-                          final_output_path=None,
-                          debug=False)
+            # self.evaluate(epoch, preds_in_patch_with_score, train_loader, final_output_path=None, debug=False)
 
             val_loss, preds_in_patch_with_score = self.validate(valid_loader, epoch)
             mpjpe = self.evaluate(epoch, preds_in_patch_with_score, valid_loader,
@@ -161,8 +159,8 @@ class Engine:
 
         end = time.time()
 
-        h36m_preds_in_patch_with_score = []
-        h36m_preds_in_patch_with_score_idx = []
+        # h36m_preds_in_patch_with_score = []
+        # h36m_preds_in_patch_with_score_idx = []
 
         # for all batches
         for batch_idx, data in enumerate(loop):
@@ -214,10 +212,10 @@ class Engine:
                                                 patch_height=self.patch_size[1],
                                                 preds=predictions)
             # filter h36m samples
-            h36m_samples_batch_idx = np.asarray(meta["name"]) == "h36m"
-            h36m_preds_in_patch_with_score.append(preds_with_score[h36m_samples_batch_idx])
-
-            h36m_preds_in_patch_with_score_idx.append((meta["idx"][h36m_samples_batch_idx]).detach().cpu().numpy())
+            # h36m_samples_batch_idx = np.asarray(meta["name"]) == "h36m"
+            # h36m_preds_in_patch_with_score.append(preds_with_score[h36m_samples_batch_idx])
+            #
+            # h36m_preds_in_patch_with_score_idx.append((meta["idx"][h36m_samples_batch_idx]).detach().cpu().numpy())
             del predictions, preds_with_score
 
             # measure elapsed time
@@ -227,10 +225,10 @@ class Engine:
         loop.close()
 
         # to array
-        h36m_preds_in_patch_with_score = np.vstack(h36m_preds_in_patch_with_score)
-        # TODO instead of sorting pass the index to the evaluate function
-        sorted_idx = np.hstack(h36m_preds_in_patch_with_score_idx).argsort()
-        h36m_preds_in_patch_with_score = h36m_preds_in_patch_with_score[sorted_idx]
+        # h36m_preds_in_patch_with_score = np.vstack(h36m_preds_in_patch_with_score)
+        # # TODO instead of sorting pass the index to the evaluate function
+        # sorted_idx = np.hstack(h36m_preds_in_patch_with_score_idx).argsort()
+        # h36m_preds_in_patch_with_score = h36m_preds_in_patch_with_score[sorted_idx]
 
         train_loss = loss_metric.avg
 
@@ -239,7 +237,7 @@ class Engine:
 
         self.lr_scheduler.step()  # decay learning rate over time
 
-        return train_loss, h36m_preds_in_patch_with_score
+        return train_loss, None
 
     def validate(self, data_loader, epoch, only_prediction=False):
         """
