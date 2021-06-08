@@ -140,13 +140,8 @@ class H36M(JointDataset):
 
         return header_pred, header_gt, fmt_pred, fmt_gt
 
-    def evaluate(self, preds, save_path=None, debug=False, epoch=0, writer=None, comet=None, writer_dict=None):
+    def evaluate(self, preds, save_path=None, debug=False, epoch=0, writer=None, comet=None):
         preds = preds[:, :, 0:3]
-
-        gt_poses_glob = []
-        pred_poses_glob = []
-        pred_2d_poses = []
-        all_images = []
 
         gts = self.db
 
@@ -250,54 +245,17 @@ class H36M(JointDataset):
                 # e_jt_14_align.append(np.linalg.norm(diff_align[jt]))
                 # e_jt_14_norm.append(np.linalg.norm(diff_norm[jt]))
 
-            # if self.cfg_general.DEBUG.DEBUG and n_sample % 100 == 0: # TODO add debug parameter
-            if False and n_sample % 100 == 0:
+            if self.image_set == "val" and n_sample % 10000 == 0:  # save every other image
                 cam = gt['cam']
+                img_path = os.path.join(self.root, gts[n_sample]['image'])
+
                 pred = cam.camera_to_world_frame(pre_3d_kpt)
                 gt_pt = cam.camera_to_world_frame(gt_3d_kpt)
 
-                gt_poses_glob.append(gt_pt)
-                pred_poses_glob.append(pred)
-                pred_2d_poses.append(pre_2d_kpt)
-                all_images.append(self.root + gts[n_sample]['image'])
-                import cv2
-                from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-                import matplotlib.pyplot as plt
-                from source.helpers.vis import drawskeleton, show3Dpose
+                vis = self.get_visualization(gt_2d_kpt, pre_2d_kpt, gt_pt, pred, e_jt, img_path)
 
-                m = 2  # 1 for MPII joints, 2 for H36M joints
-                img_path = os.path.join(self.root, gts[n_sample]['image'])
-                img = cv2.imread(img_path)
-
-                fig = plt.figure(figsize=(19.2, 10.8))
-                canvas = FigureCanvas(fig)
-
-                lc = (255, 0, 0), '#ff0000'
-                rc = (0, 0, 255), '#0000ff'
-                ax = fig.add_subplot(131)
-                drawskeleton(img, pre_2d_kpt, thickness=3, lcolor=lc[0], rcolor=rc[0], mpii=m)
-                drawskeleton(img, gt_2d_kpt, thickness=3, lcolor=(0, 255, 0), rcolor=(0, 255, 0), mpii=m)
-                ax.imshow(img[:, :, ::-1])
-                ax.set_title('Predictions in 2D')
-
-                ax = fig.add_subplot(132, projection='3d')
-                show3Dpose(gt_pt, ax, radius=750, lcolor=lc[1], rcolor=rc[1], mpii=m)
-                ax.set_title('Ground-truth 3D')
-
-                ax = fig.add_subplot(133, projection='3d')
-                show3Dpose(pred, ax, radius=750, lcolor=lc[1], rcolor=rc[1], mpii=m)
-                ax.set_title('Prediction 3D ' + ' %s' % np.array(e_jt).mean())
-
-                # plt.show()
-                # plt.savefig('tmp.png')
-                canvas.draw()
-                vis = np.fromstring(canvas.tostring_rgb(), dtype='uint8')
-                vis = vis.reshape(canvas.get_width_height()[::-1] + (3,))
-                # cv2.imwrite('tmp.png', vis)
-                writer = writer_dict['writer']
-                global_steps = writer_dict['valid_global_steps']
-                writer.add_image('result_vis', vis, global_steps, dataformats='HWC')
-                writer_dict['valid_global_steps'] = global_steps + 1
+                if comet is not None:
+                    comet.log_image(vis, name=gts[n_sample]['image'], step=epoch + 1)
 
             dist.append(np.array(e_jt).mean())
             # dist_align.append(np.array(e_jt_align).mean())
@@ -365,3 +323,40 @@ class H36M(JointDataset):
                 np.savetxt(gt_save_path, gt_to_save, delimiter=',', header=self.header_gt, fmt=self.fmt_gt, comments='')
 
         return name_value, np.asarray(dist).mean()
+
+    def get_visualization(self, gt_2d_kpt, pre_2d_kpt, gt_pt, pred, e_jt, img_path):
+        import cv2
+        from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
+        import matplotlib.pyplot as plt
+        from source.helpers.vis import drawskeleton, show3Dpose
+
+        m = 2  # 1 for MPII joints, 2 for H36M joints
+        img = cv2.imread(img_path)
+
+        fig = plt.figure(figsize=(19.2, 10.8))
+        canvas = FigureCanvas(fig)
+        lc = (255, 0, 0), '#ff0000'
+        rc = (0, 0, 255), '#0000ff'
+        ax = fig.add_subplot(131)
+
+        drawskeleton(img, pre_2d_kpt, thickness=3, lcolor=lc[0], rcolor=rc[0], mpii=m)
+        drawskeleton(img, gt_2d_kpt, thickness=3, lcolor=(0, 255, 0), rcolor=(0, 255, 0), mpii=m)
+        ax.imshow(img[:, :, ::-1])
+        ax.set_title('Predictions in 2D')
+        ax = fig.add_subplot(132, projection='3d')
+
+        show3Dpose(gt_pt, ax, radius=750, lcolor=lc[1], rcolor=rc[1], mpii=m)
+        ax.set_title('Ground-truth 3D')
+        ax = fig.add_subplot(133, projection='3d')
+
+        show3Dpose(pred, ax, radius=750, lcolor=lc[1], rcolor=rc[1], mpii=m)
+        ax.set_title('Prediction 3D ' + ' %s' % np.array(e_jt).mean())
+
+        # plt.show()
+        # plt.savefig('tmp.png')
+
+        canvas.draw()
+        vis = np.fromstring(canvas.tostring_rgb(), dtype='uint8')
+        vis = vis.reshape(canvas.get_width_height()[::-1] + (3,))
+
+        return vis

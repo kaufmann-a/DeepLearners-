@@ -117,14 +117,12 @@ class Engine:
             train_loss, preds_in_patch_with_score = self.train_step(train_loader, epoch)
             self.evaluate(epoch, preds_in_patch_with_score, train_loader,
                           final_output_path=None,
-                          debug=False,
-                          writer_dict=False)
+                          debug=False)
 
             val_loss, preds_in_patch_with_score = self.validate(valid_loader, epoch)
             mpjpe = self.evaluate(epoch, preds_in_patch_with_score, valid_loader,
                                   final_output_path=None,
-                                  debug=False,
-                                  writer_dict=False)
+                                  debug=False)
 
             # convert mpjpe into a greater is better metric
             perfect_indicator = 500. - mpjpe
@@ -310,7 +308,7 @@ class Engine:
 
             return val_loss, preds_in_patch_with_score
 
-    def evaluate(self, epoch, preds_in_patch_with_score, val_loader, final_output_path, debug=False, writer_dict=None):
+    def evaluate(self, epoch, preds_in_patch_with_score, val_loader, final_output_path, debug=False):
         print("Evaluation step")
 
         # TODO also evaluate on mpii?
@@ -344,13 +342,10 @@ class Engine:
                                                       debug=debug,
                                                       epoch=epoch,
                                                       writer=self.writer,
-                                                      comet=self.comet,
-                                                      writer_dict=writer_dict)
+                                                      comet=self.comet)
                 else:
                     Logcreator.info('Test set is used, saving results to:', final_output_path)
-                    _, mpjpe = imdb.evaluate(preds_in_img_with_score.copy(), final_output_path,
-                                             debug=debug,
-                                             writer_dict=writer_dict)
+                    _, mpjpe = imdb.evaluate(preds_in_img_with_score.copy(), final_output_path, debug=debug)
                     mpjpe = 0.0
 
                 Logcreator.info("Mean per joint position error", mpjpe)

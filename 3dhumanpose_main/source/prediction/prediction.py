@@ -58,5 +58,4 @@ class Prediction(object):
         # run validate and evaluate with test set
         val_loss, preds_in_patch_with_score = self.engine.validate(test_loader, epoch=0, only_prediction=True)
         acc = self.engine.evaluate(0, preds_in_patch_with_score, test_loader, Configuration.output_directory,
-                                   debug=False,
-                                   writer_dict=None)
+                                   debug=False)
