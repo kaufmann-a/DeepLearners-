@@ -1,12 +1,15 @@
 import random
 
 import cv2
+import matplotlib.pyplot as plt
 import numpy as np
 import torch
 
-from source.helpers.transforms import get_2d_rotation
 import source.helpers.voc_occluder_helper as voc_occluders
 from source.exceptions.configurationerror import VOC_OccluderError
+from source.helpers.transforms import get_2d_rotation
+from source.helpers.vis import cv_draw_joints
+
 
 def gen_trans_from_patch_cv(c_x, c_y,
                             src_width, src_height,
@@ -104,8 +107,6 @@ def trans_coords_from_patch_to_org_3d(coords_in_patch, c_x, c_y, bb_width, bb_he
 
 
 def debug_vis_patch(img_patch_cv, joints, joints_vis, flip_pairs, window_name="patch_with_gt"):
-    import matplotlib.pyplot as plt
-    from source.helpers.vis import cv_draw_joints
     cv_img_patch_show = img_patch_cv.copy()
     cv_draw_joints(cv_img_patch_show, joints, joints_vis, flip_pairs)
     plt.imshow(cv_img_patch_show)
@@ -122,10 +123,9 @@ def get_single_patch_sample(joint_dataset_obj, img_path, center_x, center_y, wid
                             apply_augmentations: bool,
                             augmentation_config,
                             joints=None, joints_vis=None,
-                            DEBUG=False):
+                            DEBUG=0):
     # 1. load image
-    cvimg = cv2.imread(
-        img_path, cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)
+    cvimg = cv2.imread(img_path, cv2.IMREAD_COLOR | cv2.IMREAD_IGNORE_ORIENTATION)
 
     if not isinstance(cvimg, np.ndarray):
         raise IOError("Fail to read %s" % img_path)
@@ -175,8 +175,13 @@ def get_single_patch_sample(joint_dataset_obj, img_path, center_x, center_y, wid
             joints[n_jt, 0:2] = trans_point2d(joints[n_jt, 0:2], trans)
             joints[n_jt, 2] = joints[n_jt, 2] / (rect_3d_width * scale) * patch_width
 
-        if DEBUG:
-            debug_vis_patch(img_patch_cv, joints, joints_vis, joint_flip_pairs)
+        if DEBUG >= 1:
+            image_out = img_patch.copy()
+            for n_c in range(img_channels):
+                if mean is not None and std is not None:
+                    image_out[n_c, :, :] = (image_out[n_c, :, :] * std[n_c] + mean[n_c])
+            image_out = np.transpose(image_out, (1, 2, 0)).astype(np.uint8)  # convert tensor back to image
+            debug_vis_patch(image_out, joints, joints_vis, joint_flip_pairs)
 
         # 5. get label of some type according to certain need
         label, label_weight = label_func(patch_width, patch_height, joints, joints_vis)
