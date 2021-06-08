@@ -208,15 +208,15 @@ class Engine:
             del loss
 
             # update metrics
-            preds_with_score = self.result_func(patch_width=self.patch_size[0],
-                                                patch_height=self.patch_size[1],
-                                                preds=predictions)
+            # preds_with_score = self.result_func(patch_width=self.patch_size[0],
+            #                                     patch_height=self.patch_size[1],
+            #                                     preds=predictions)
             # filter h36m samples
             # h36m_samples_batch_idx = np.asarray(meta["name"]) == "h36m"
             # h36m_preds_in_patch_with_score.append(preds_with_score[h36m_samples_batch_idx])
             #
             # h36m_preds_in_patch_with_score_idx.append((meta["idx"][h36m_samples_batch_idx]).detach().cpu().numpy())
-            del predictions, preds_with_score
+            del predictions  # , preds_with_score
 
             # measure elapsed time
             batch_time.update(time.time() - end)
