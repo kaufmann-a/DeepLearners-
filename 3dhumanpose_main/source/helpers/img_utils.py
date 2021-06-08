@@ -132,6 +132,11 @@ def get_single_patch_sample(joint_dataset_obj, img_path, center_x, center_y, wid
 
     img_height, img_width, img_channels = cvimg.shape
 
+    if DEBUG == 2:
+        plt.imshow(cvimg[:, :, ::-1])  # convert BGR -> RGB
+        plt.title("source image")
+        plt.show()
+
     # 2. get augmentation parameters
     if apply_augmentations:
         apply_random_flip, color_scale, rotation, scale = get_augmentation_params(augmentation_config)
@@ -153,12 +158,9 @@ def get_single_patch_sample(joint_dataset_obj, img_path, center_x, center_y, wid
                                                   flip_img=apply_random_flip,
                                                   scale_factor=scale,
                                                   rotation_factor=rotation)
-
-    image = img_patch_cv.copy()
-    image = image[:, :, ::-1]
-
-    img_patch_cv = image.copy()
-    img_patch = convert_cvimg_to_tensor(image)
+    # to rgb and then to tensor
+    img_patch_cv = cv2.cvtColor(img_patch_cv, cv2.COLOR_BGR2RGB)
+    img_patch = convert_cvimg_to_tensor(img_patch_cv)
 
     # apply normalization
     for n_c in range(img_channels):
@@ -177,7 +179,7 @@ def get_single_patch_sample(joint_dataset_obj, img_path, center_x, center_y, wid
 
         if DEBUG >= 1:
             image_out = img_patch.copy()
-            for n_c in range(img_channels):
+            for n_c in range(img_channels):  # reverse normalization
                 if mean is not None and std is not None:
                     image_out[n_c, :, :] = (image_out[n_c, :, :] * std[n_c] + mean[n_c])
             image_out = np.transpose(image_out, (1, 2, 0)).astype(np.uint8)  # convert tensor back to image
