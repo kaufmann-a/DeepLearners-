@@ -40,7 +40,7 @@
             "shuffle_data" : true,
             "log_to_comet" : true,
             "comet" : {
-                "tags" : ["occluder-exp", "backbone-exp", "aug-exp"]
+                "tags" : ["backbone-exp"]
             },
         },
         "model": {
@@ -50,7 +50,7 @@
             "num_deconv_layers" : 3,
             "num_deconv_filters" : 256,
             "kernel_size" : 4,
-            "depth_dim" : 64,
+            "depth_dim" : 72,
             "deconv_use_upsample" : false,
         },
         "optimizer": {
