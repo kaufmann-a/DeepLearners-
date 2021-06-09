@@ -39,6 +39,9 @@
             "num_workers" : 10,
             "shuffle_data" : true,
             "log_to_comet" : true,
+            "comet" : {
+                "tags" : ["occluder-exp"]
+            },
         },
         "model": {
             "name": "IntegralPoseRegressionModel",  //  ResPoseNet_Regression, PoseAlexNetReg
