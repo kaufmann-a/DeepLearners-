@@ -14,7 +14,7 @@
             "random_flip" : false,
             "voc_occluder_datapath" : "getenv('VOC_DATASET')",
             "voc_occluder" : true,
-            "voc_occluder_p" : 0.3,
+            "voc_occluder_p" : 1,
         },
         "h36m_params" : {
             "train_set": "train",
