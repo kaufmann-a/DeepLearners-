@@ -13,6 +13,7 @@ import os
 import sys
 
 import time
+import inspect
 import random
 from io import StringIO
 
@@ -60,10 +61,12 @@ class Engine:
         Configuration.tensorboard_folder = os.path.join(Configuration.output_directory, "tensorboard")
         if not os.path.exists(Configuration.tensorboard_folder):
             os.makedirs(Configuration.tensorboard_folder)
-        self.writer = SummaryWriter(log_dir=Configuration.tensorboard_folder)
 
-        # Init comet
-        self.comet = metricslogging.init_comet()
+        if inspect.getouterframes(inspect.currentframe(), 2)[1].filename.__contains__('train.py'):
+            self.writer = SummaryWriter(log_dir=Configuration.tensorboard_folder)
+
+            # Init comet
+            self.comet = metricslogging.init_comet()
 
         # Print model summary
         self.print_modelsummary()
