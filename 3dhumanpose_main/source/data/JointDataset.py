@@ -134,6 +134,9 @@ class JointDataset(Dataset):
         else:
             joints = joints_vis = None
 
+        # apply augmentations only on h36m
+        apply_augmentations = self.is_train and (self.name == 'h36m')
+
         img_patch, label, label_weight = get_single_patch_sample(self, image_file,
                                                                  db_rec['center_x'], db_rec['center_y'],
                                                                  db_rec['width'], db_rec['height'],
@@ -141,7 +144,7 @@ class JointDataset(Dataset):
                                                                  self.rect_3d_width, self.rect_3d_height,
                                                                  self.mean, self.std, self.label_func,
                                                                  joint_flip_pairs=self.flip_pairs_super,
-                                                                 apply_augmentations=self.is_train,
+                                                                 apply_augmentations=apply_augmentations,
                                                                  augmentation_config=self.augmentations,
                                                                  joints=joints,
                                                                  joints_vis=joints_vis)
