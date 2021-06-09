@@ -8,7 +8,7 @@
         "folder" : "getenv('DATA_COLLECTION')",
         "dataset" : ["h36m", "mpii"],
         "augmentations" : {
-            "scale_factor" : 0,
+            "scale_factor" : 0.25,
             "rotation_factor" : 0,
             "color_factor": 0,
             "random_flip" : false,
@@ -35,12 +35,12 @@
         "general" : {
             "batch_size": 24,
             "num_epochs" : 140,
-            "checkpoint_save_interval" : 2,
+            "checkpoint_save_interval" : 5,
             "num_workers" : 10,
             "shuffle_data" : true,
             "log_to_comet" : true,
             "comet" : {
-                "tags" : ["occluder-exp", "backbone-exp", "aug-exp"]
+                "tags" : ["aug-exp"]
             },
         },
         "model": {
