@@ -40,7 +40,7 @@
             "shuffle_data" : true,
             "log_to_comet" : true,
             "comet" : {
-                "tags" : ["occluder-exp"]
+                "tags" : ["occluder-exp", "backbone-exp"]
             },
         },
         "model": {
