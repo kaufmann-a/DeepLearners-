@@ -157,8 +157,9 @@ class JointHeatmapDecoder(torch.nn.Module):
 
 
 class JointIntegralRegressor(torch.nn.Module):
-    def __init__(self):
+    def __init__(self, infer_with_argmax=False):
         super().__init__()
+        self.infer_with_argmax = infer_with_argmax
 
     def forward(self, heatmaps):
         N, J, D, H, W = heatmaps.shape
@@ -172,6 +173,13 @@ class JointIntegralRegressor(torch.nn.Module):
         x_maps = heatmaps.sum(dim=2).sum(dim=2)
         y_maps = heatmaps.sum(dim=2).sum(dim=3)
         z_maps = heatmaps.sum(dim=3).sum(dim=3)
+
+        if not self.training and self.infer_with_argmax:
+            return torch.stack((
+                x_maps.argmax(dim=2) / W - 0.5,
+                y_maps.argmax(dim=2) / H - 0.5,
+                z_maps.argmax(dim=2) / D - 0.5
+            ), dim=2)
 
         # Take expected coordinate for each axis (and recenter)
         x_preds = (x_maps * torch.arange(W).to(heatmaps.device)).sum(dim=2) / W - 0.5
