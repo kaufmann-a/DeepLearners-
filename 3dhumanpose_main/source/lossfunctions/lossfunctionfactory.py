@@ -13,6 +13,7 @@ from source.lossfunctions.jointmultiloss import JointMultiLoss
 from source.lossfunctions.l1jointregressionloss import L1JointRegressionLoss
 from source.lossfunctions.l1jointregressionloss import L1JointRegressionLoss_eth_code
 from source.lossfunctions.l2jointheatmaploss import L2JointHeatmapLoss
+from source.lossfunctions.probabilisticloss import JointProbabilisticLoss
 
 
 class LossFunctionFactory(object):
@@ -41,10 +42,15 @@ class LossFunctionFactory(object):
         return JointMultiLoss(cfg.loss_weight_heatmap, cfg.loss_weight_regression)
 
     @staticmethod
+    def JointProbabilisticLoss(self, cfg):
+        return JointProbabilisticLoss(cfg.monte_carlo_samples)
+
+    @staticmethod
     def get_members():
         return {
             'L1JointRegressionLoss_eth_code': LossFunctionFactory.L1JointRegressionLoss_eth_code,
             'L1JointRegressionLoss': LossFunctionFactory.L1JointRegressionLoss,
             'L2JointHeatMapLoss': LossFunctionFactory.L2JointHeatMapLoss,
-            'JointMultiLoss': LossFunctionFactory.JointMultiLoss
+            'JointMultiLoss': LossFunctionFactory.JointMultiLoss,
+            'JointProbabilisticLoss': LossFunctionFactory.JointProbabilisticLoss
         }

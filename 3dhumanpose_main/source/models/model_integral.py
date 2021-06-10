@@ -189,11 +189,6 @@ class JointIntegralRegressor(torch.nn.Module):
         return torch.stack((x_preds, y_preds, z_preds), dim=2)  # Return format N, J, 3
 
 
-# TODO: Investigate DSAC-like argmax as an alternative to the integral (soft-argmax)
-# "Probabilistic selection for which we can derive the expected loss w.r.t. to all learnable parameters."
-# DSAC - Differentiable RANSAC for Camera Localization (https://arxiv.org/abs/1611.05705)
-
-
 class ModelIntegralPoseRegression(BaseModel):
     name = 'IntegralPoseRegressionModel'
     resnet_nr_output_channels = {
@@ -210,6 +205,8 @@ class ModelIntegralPoseRegression(BaseModel):
         self.backbone = self.getPretrainedResnet(model_params, pretrained=True)
 
         num_in_channels = self.resnet_nr_output_channels[model_params.resnet_model]
+
+        self.train_heatmaps_only = hasattr(model_params, 'train_heatmaps_only') and model_params.train_heatmaps_only
 
         if hasattr(model_params, "use_bot_net") and model_params.use_bot_net:
             fmap_size = [v // (2 ** 4) for v in dataset_params.image_size]  # might not work for all sizes
@@ -291,6 +288,10 @@ class ModelIntegralPoseRegression(BaseModel):
         if self.bottleneck is not None:
             features = self.bottleneck(features)
         heatmaps = self.joint_decoder(features)
-        joints = self.joint_regressor(heatmaps)
+
+        if not self.train_heatmaps_only or not self.training:
+            joints = self.joint_regressor(heatmaps)
+        else:
+            joints = None
 
         return heatmaps, joints
