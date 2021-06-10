@@ -268,7 +268,7 @@ class ModelIntegralPoseRegression(BaseModel):
                                                  upsample2x=model_params.deconv_use_upsample if hasattr(model_params,
                                                                                                         "deconv_use_upsample") else False
                                                  )
-        self.joint_regressor = JointIntegralRegressor()
+        self.joint_regressor = JointIntegralRegressor(infer_with_argmax=model_params.infer_with_argmax)
         Logcreator.info("Successfully initialized model with name IntegralPoseRegressionModel successfully initialized")
 
     def getPretrainedResnet(self, model_params, pretrained=True):

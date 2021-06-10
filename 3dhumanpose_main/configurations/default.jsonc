@@ -49,6 +49,7 @@
             "kernel_size" : 4,
             "depth_dim" : 64,
             "deconv_use_upsample" : false,
+            "infer_with_argmax": false,
         },
         "optimizer": {
             "name": "adam",
