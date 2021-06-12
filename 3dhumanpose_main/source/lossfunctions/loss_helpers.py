@@ -44,7 +44,8 @@ def generate_joint_location_label(patch_width, patch_height, joints, joints_vis,
 def get_result_func():
     # TODO Refactor: Move code into respective loss function and return this function with the loss function
     loss_cfg = Configuration.get('training.loss', optional=False)
-    if loss_cfg.loss_function == "JointMultiLoss":
+    if loss_cfg.loss_function == "JointMultiLoss" or \
+            loss_cfg.loss_function == 'JointProbabilisticLoss':
         return get_integral_joint_location_result
     return get_joint_regression_result
 
