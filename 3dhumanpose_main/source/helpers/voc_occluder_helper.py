@@ -8,11 +8,20 @@ import matplotlib.pyplot as plt
 import skimage.data
 import cv2
 import PIL.Image
+import torchvision
+
+from source.logcreator.logcreator import Logcreator
 
 
 def load_occluders(pascal_voc_root_path):
     occluders = []
     structuring_element = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (8, 8))
+
+    try:
+        # download VOC dataset if not available
+        torchvision.datasets.VOCDetection(pascal_voc_root_path, download=True)
+    except Exception as e:
+        Logcreator.warn("Download of VOC dataset failed:", str(e))
 
     annotation_paths = list_filepaths(os.path.join(pascal_voc_root_path, 'Annotations'))
     for annotation_path in annotation_paths:
