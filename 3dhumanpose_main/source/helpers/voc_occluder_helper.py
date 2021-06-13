@@ -13,15 +13,34 @@ import torchvision
 from source.logcreator.logcreator import Logcreator
 
 
+def download_voc_dataset(pascal_voc_root_path, fallback=False):
+    # download VOC dataset if not available
+    if fallback:
+        # overwrite the url from the official website to deepai.org
+        torchvision.datasets.voc.DATASET_YEAR_DICT = {
+            '2012': {
+                'url': 'http://pjreddie.com/media/files/VOCtrainval_11-May-2012.tar ',
+                'filename': 'VOCtrainval_11-May-2012.tar',
+                'md5': '6cd6e144f989b92b3379bac3b3de84fd',
+                'base_dir': os.path.join('VOCdevkit', 'VOC2012')
+            }
+        }
+    torchvision.datasets.VOCDetection(pascal_voc_root_path, year='2012', download=True)
+
+
 def load_occluders(pascal_voc_root_path):
     occluders = []
     structuring_element = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (8, 8))
 
     try:
-        # download VOC dataset if not available
-        torchvision.datasets.VOCDetection(pascal_voc_root_path, download=True)
+        download_voc_dataset(pascal_voc_root_path)
     except Exception as e:
-        Logcreator.warn("Download of VOC dataset failed:", str(e))
+        Logcreator.warn("Downloading the VOC dataset from the official website failed:", str(e))
+        try:
+            Logcreator.warn("Fallback to different provider for VOC dataset download")
+            download_voc_dataset(pascal_voc_root_path, fallback=True)
+        except Exception as e2:
+            Logcreator.error("Download of VOC dataset failed:", str(e2))
 
     annotation_paths = list_filepaths(os.path.join(pascal_voc_root_path, 'Annotations'))
     for annotation_path in annotation_paths:
@@ -135,6 +154,7 @@ def resize_by_factor(im, factor):
     new_size = tuple(np.round(np.array([im.shape[1], im.shape[0]]) * factor).astype(int))
     interp = cv2.INTER_LINEAR if factor > 1.0 else cv2.INTER_AREA
     return cv2.resize(im, new_size, fx=factor, fy=factor, interpolation=interp)
+
 
 def list_filepaths(dirpath):
     names = os.listdir(dirpath)
