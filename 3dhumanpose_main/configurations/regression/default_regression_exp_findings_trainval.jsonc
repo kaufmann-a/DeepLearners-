@@ -33,7 +33,7 @@
     },
     "training": {
         "general" : {
-            "batch_size": 24,
+            "batch_size": 14,
             "num_epochs" : 140,
             "checkpoint_save_interval" : 2,
             "num_workers" : 10,
