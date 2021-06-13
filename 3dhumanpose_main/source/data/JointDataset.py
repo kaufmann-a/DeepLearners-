@@ -78,7 +78,7 @@ class JointDataset(Dataset):
 
         self.occluders = None
         #Prepare voc occluders if used in training
-        if self.augmentations.voc_occluder:
+        if self.augmentations.voc_occluder and self.is_train:
             try:
                 self.occluders = voc_occluders.load_occluders(self.augmentations.voc_occluder_datapath)
             except:
