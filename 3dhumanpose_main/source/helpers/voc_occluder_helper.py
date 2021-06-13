@@ -1,13 +1,10 @@
-import functools
 import os.path
 import random
-import sys
 import xml.etree.ElementTree
-import numpy as np
-import matplotlib.pyplot as plt
-import skimage.data
-import cv2
+
 import PIL.Image
+import cv2
+import numpy as np
 import torchvision
 
 from source.logcreator.logcreator import Logcreator
@@ -16,7 +13,7 @@ from source.logcreator.logcreator import Logcreator
 def download_voc_dataset(pascal_voc_root_path, fallback=False):
     # download VOC dataset if not available
     if fallback:
-        # overwrite the url from the official website to deepai.org
+        # overwrite the url to download from a mirror and not the official website
         torchvision.datasets.voc.DATASET_YEAR_DICT = {
             '2012': {
                 'url': 'http://pjreddie.com/media/files/VOCtrainval_11-May-2012.tar ',
@@ -106,7 +103,7 @@ def occlude_with_objects(im, occluders):
         scale_factor = random_scale_factor * im_scale_factor
         occluder = resize_by_factor(occluder, scale_factor)
 
-        center = np.random.uniform([0,0], width_height)
+        center = np.random.uniform([0, 0], width_height)
         paste_over(im_src=occluder, im_dst=result, center=center)
 
     return result
@@ -141,7 +138,7 @@ def paste_over(im_src, im_dst, center):
     end_src = width_height_src + (end_dst - raw_end_dst)
     region_src = im_src[start_src[1]:end_src[1], start_src[0]:end_src[0]]
     color_src = region_src[..., 0:3]
-    alpha = region_src[..., 3:].astype(np.float32)/255
+    alpha = region_src[..., 3:].astype(np.float32) / 255
 
     im_dst[start_dst[1]:end_dst[1], start_dst[0]:end_dst[0]] = (
             alpha * color_src + (1 - alpha) * region_dst)
