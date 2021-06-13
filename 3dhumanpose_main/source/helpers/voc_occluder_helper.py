@@ -9,6 +9,7 @@ import torchvision
 
 from source.logcreator.logcreator import Logcreator
 
+BASE_DIR = os.path.join('VOCdevkit', 'VOC2012')
 
 def download_voc_dataset(pascal_voc_root_path, fallback=False):
     # download VOC dataset if not available
@@ -19,7 +20,7 @@ def download_voc_dataset(pascal_voc_root_path, fallback=False):
                 'url': 'http://pjreddie.com/media/files/VOCtrainval_11-May-2012.tar ',
                 'filename': 'VOCtrainval_11-May-2012.tar',
                 'md5': '6cd6e144f989b92b3379bac3b3de84fd',
-                'base_dir': os.path.join('VOCdevkit', 'VOC2012')
+                'base_dir': BASE_DIR
             }
         }
     torchvision.datasets.VOCDetection(pascal_voc_root_path, year='2012', download=True)
@@ -30,7 +31,9 @@ def load_occluders(pascal_voc_root_path):
     structuring_element = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (8, 8))
 
     try:
-        download_voc_dataset(pascal_voc_root_path)
+        # assume data available if the folder "Annotations" exists
+        if not os.path.exists(os.path.join(pascal_voc_root_path, BASE_DIR, 'Annotations')):
+            download_voc_dataset(pascal_voc_root_path)
     except Exception as e:
         Logcreator.warn("Downloading the VOC dataset from the official website failed:", str(e))
         try:
@@ -39,6 +42,8 @@ def load_occluders(pascal_voc_root_path):
         except Exception as e2:
             Logcreator.error("Download of VOC dataset failed:", str(e2))
 
+    # update path with BASE_DIR
+    pascal_voc_root_path = os.path.join(pascal_voc_root_path, BASE_DIR)
     annotation_paths = list_filepaths(os.path.join(pascal_voc_root_path, 'Annotations'))
     for annotation_path in annotation_paths:
         xml_root = xml.etree.ElementTree.parse(annotation_path).getroot()
