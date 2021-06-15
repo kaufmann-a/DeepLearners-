@@ -12,6 +12,7 @@
 ## 2. Adjust environment variables
 - In the `./DeepLearners/3dhumanpose_main/.env` file the environment variables can be adjusted if needed
 - By default, the environment variables are set to the correct paths on the **leonhard** cluster
+- The VOC_DATASET is downloaded automatically to the set directory. Nevertheless, on leonhard a redirection of the VOC_DATASET path to the scratch might be necessary due to the _file count limit_.
   ```
   OUTPUT_PATH=./trainings
   DATA_COLLECTION=/cluster/project/infk/hilliges/lectures/mp21/project2/data
