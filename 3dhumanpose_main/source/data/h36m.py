@@ -104,7 +104,7 @@ class H36M(JointDataset):
 
         subjects = set()
         for idx in range(len(gt_db)):
-            subjects.add(re.findall(pattern='[S]\d', string=gt_db[idx]['image'])[0])
+            subjects.add(re.findall(pattern='[S]\d+', string=gt_db[idx]['image'])[0])
 
         Logcreator.info(f"Subjects in {self.name} {self.image_set} are:", subjects)
 
