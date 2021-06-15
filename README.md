@@ -2,7 +2,7 @@
 
 ## 1. Initial setup and installation
 - Clone this git repository `git clone https://gitlab.inf.ethz.ch/COURSE-MP2021/DeepLearners.git`
-- Load the **leonhard** software modules: `module load python_gpu/3.8.5`
+- Load the **leonhard** software modules: `module load gcc/6.3.0 python_gpu/3.8.5`
 - Create a virtual environment and install the required python packages:   
     - `cd ./DeepLearners/`
     - `python -m venv mp_env`
@@ -20,7 +20,7 @@
 
 ## 3. Loading environment
 1. `cd ./DeepLearners/`
-2. Load the **leonhard** software modules: `module load python_gpu/3.8.5 tmux/2.6 eth_proxy`
+2. Load the **leonhard** software modules: `module load gcc/6.3.0 python_gpu/3.8.5 eth_proxy`
 3. Load the python environment: `source ./mp_env/bin/activate`
 
 ## 4. Run training
