@@ -92,7 +92,21 @@ class H36M(JointDataset):
                 a['is_h36m'] = True
                 gt_db.append(a)
 
+        self.log_subjects(gt_db)
+
         return gt_db
+
+    def log_subjects(self, gt_db):
+        """
+        Logs subjects contained in the dataset.
+        """
+        import re
+
+        subjects = set()
+        for idx in range(len(gt_db)):
+            subjects.add(re.findall(pattern='[S]\d', string=gt_db[idx]['image'])[0])
+
+        Logcreator.info(f"Subjects in {self.name} {self.image_set} are:", subjects)
 
     def read_annotation_file(self):
         """
