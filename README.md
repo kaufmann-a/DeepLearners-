@@ -31,10 +31,10 @@
    - Example to run a configuration: `python train.py --configuration ./configurations/<path-to-config>/<configuration-file>`
    - **Leonhard** commands to run different config files:
     
-| Description | Datasets | Config file | Submission score | Command |
-| ----------- | -------- |------------ | ---------------- | ------- |
-| Best submission | h36m trainval, mpii trainval | `./configurations/...` | ... | `bsub -n 5 -W 120:00 -J "trainval" -R "rusage[mem=2048, ngpus_excl_p=1]" -R "select[gpu_model0==GeForceRTX2080Ti]" 'python train.py --configuration ./configurations/..'` |
-| Best trained only on training data set | h36m train, mpii train | `./configurations/...` | ... | `bsub -n 5 -W 120:00 -J "train" -R "rusage[mem=2048, ngpus_excl_p=1]" -R "select[gpu_model0==GeForceRTX2080Ti]" 'python train.py --configuration ./configurations/..'` |
+| Description | Datasets | Config file | Validation score | Submission score | Command |
+| ----------- | -------- |------------ | ---------------- | ---------------- | ------- |
+| Best submission | h36m trainval,</br>mpii trainval | `./configurations/best/regression_exp_findings.jsonc` | - | ... | `bsub -n 5 -W 120:00 -J "trainval" -R "rusage[mem=2048, ngpus_excl_p=1]" -R "select[gpu_model0==GeForceRTX2080Ti]" 'python train.py --configuration --configuration ./configurations/best/regression_exp_findings.jsonc'` |
+| Best trained only on training data set | h36m train,</br>mpii train | `./configurations/best/regression_exp_findings_trainval.jsonc` |  ... | ... | `bsub -n 5 -W 120:00 -J "train" -R "rusage[mem=2048, ngpus_excl_p=1]" -R "select[gpu_model0==GeForceRTX2080Ti]" 'python train.py --configuration ./configurations/best/regression_exp_findings_trainval.jsonc'` |
 
 4. The result of the trainings can be found by default (see [2. Adjust environment variables](#2-adjust-environment-variables)) in the folder `./trainings`
    - The folders have following naming convention: `<datetime>-<configfile_name>` (see [Training folder structure](#training-folder-structure))
