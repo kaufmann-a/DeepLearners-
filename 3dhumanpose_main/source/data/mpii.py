@@ -78,17 +78,13 @@ class MPIIDataset(JointDataset):
             c = np.array(a['center'], dtype=np.float)
             s = np.array([a['scale'], a['scale']], dtype=np.float)  # 2d array with individual scale for x and y
 
-            if c[0] < 1:  # if the center is smaller we skip the image # TODO is this the correct thing to do?
-                if False:
-                    print(c)
+            if c[0] < 1:  # if the center is smaller we skip the image
+                # we skip 234 of 29116 images if we use the trainval set and 0 for the train/val set
                 continue
 
             # Just add image to db if it exists on disk
             if not os.path.isfile(os.path.join(self.root, 'images', a['image'])):
                 continue
-
-            # TODO Ask on piazza if the following argumentations are already done to the mpii data that was
-            #  supplied by eth
 
             # we adjust the center and scale slightly to avoid cropping of limbs
             # (this is common practice in multiple git repos)
@@ -148,5 +144,4 @@ class MPIIDataset(JointDataset):
         return annotations
 
     def evaluate(self, preds, save_path=None, debug=False, writer_dict=None):
-        # TODO Do we want to evaluate it or only use it as gradient info.
         pass
