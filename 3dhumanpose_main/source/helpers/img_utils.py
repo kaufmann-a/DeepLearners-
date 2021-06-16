@@ -1,3 +1,10 @@
+"""
+Helperfunctions for image handling
+"""
+
+__author__ = 'Andreas Kaufmann, Jona Braun, Kouroche Bouchiat'
+__email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, kbouchiat@student.ethz.ch"
+
 import random
 
 import cv2

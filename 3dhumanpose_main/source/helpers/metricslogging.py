@@ -1,7 +1,13 @@
+"""
+Helperfunction to initialize comet logging
+"""
+
+__author__ = 'Andreas Kaufmann, Jona Braun, Kouroche Bouchiat'
+__email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, kbouchiat@student.ethz.ch"
+
 import glob
 import os
 from comet_ml import Experiment
-from torch.utils.tensorboard import SummaryWriter
 from source.configuration import Configuration
 from source.logcreator.logcreator import Logcreator
 

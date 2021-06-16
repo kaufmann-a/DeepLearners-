@@ -1,3 +1,10 @@
+"""
+Metrics Classes
+"""
+
+__author__ = 'Andreas Kaufmann, Jona Braun, Kouroche Bouchiat'
+__email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, kbouchiat@student.ethz.ch"
+
 from source.logcreator.logcreator import Logcreator
 
 
