@@ -9,14 +9,19 @@
     - `source ./mp_env/bin/activate`
     - `pip install -r ./3dhumanpose_main/requirements.txt`
 
-## 2. Adjust environment variables
-- In the `./DeepLearners/3dhumanpose_main/.env` file the environment variables can be adjusted if needed
-- By default, the environment variables are set to the correct paths on the **leonhard** cluster
-- The VOC_DATASET is downloaded automatically to the set directory. Nevertheless, on leonhard a redirection of the VOC_DATASET path to the scratch (`/cluster/scratch/<username>/`) is recommended due to the _file count limit_.
+## 2. Add environment variables
+- If you skip this step, the default environment variables defined in `./DeepLearners/3dhumanpose_main/.env_default` will be used.
+    - By default, the environment variables are set to the correct paths on the **leonhard** cluster
+- Add a file called `.env` to the directory `./DeepLearners/3dhumanpose_main`. In the file add the following environment variables:
+    - `OUTPUT_PATH`=Folderpath to which the model checkpoints etc. should be saved
+    - `DATA_COLLECTION`=Path to training data
+    - `VOC_DATASET`=Path to VOC occluder dataset (The VOC_DATASET is downloaded automatically to the set directory. Nevertheless, on leonhard a redirection of the VOC_DATASET path to the scratch (`/cluster/scratch/<username>/`) is recommended due to the _file count limit_.)
+
+A sample .env file could look as follows:
   ```
-  OUTPUT_PATH=./trainings
+  OUTPUT_PATH=/cluster/scratch/<username>/mp_trainings
   DATA_COLLECTION=/cluster/project/infk/hilliges/lectures/mp21/project2/data
-  VOC_DATASET=../voc_dataset
+  VOC_DATASET=/cluster/scratch/<username>/mp_voc_dataset
   ```
 
 ## 3. Loading environment
