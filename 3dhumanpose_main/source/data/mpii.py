@@ -1,3 +1,10 @@
+"""
+MPII dataset and all methods associated to it
+"""
+
+__author__ = 'Andreas Kaufmann, Jona Braun, Kouroche Bouchiat'
+__email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, kbouchiat@student.ethz.ch"
+
 import copy
 import json
 import os

@@ -1,3 +1,10 @@
+"""
+H35M Dataset and all function associated to it
+"""
+
+__author__ = 'Andreas Kaufmann, Jona Braun, Kouroche Bouchiat'
+__email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, kbouchiat@student.ethz.ch"
+
 import copy
 import os
 import pickle as pkl
@@ -74,7 +81,7 @@ class H36M(JointDataset):
             for idx in range(len(anno[1])):
                 for cid in range(self.num_cams):
                     a = anno[cid + 1][idx]
-                    a['is_h36m'] = True  # TODO can be removed, except if we want to know the source somewhere later
+                    a['is_h36m'] = True
                     if os.path.isfile(os.path.join(self.root, a['image'])):
                         gt_db[cid].append(a)
 

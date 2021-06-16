@@ -2,7 +2,7 @@
 # coding: utf8
 
 """
-Thrown if configuration is missing or invalid.
+Custom exception classes
 """
 
 __author__ = 'Andreas Kaufmann, Jona Braun, Kouroche Bouchiat'

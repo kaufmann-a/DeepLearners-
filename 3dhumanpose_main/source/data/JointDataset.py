@@ -1,3 +1,10 @@
+"""
+Parent Class of Dataset classes, provides methods used for both H36M and MPII
+"""
+
+__author__ = 'Andreas Kaufmann, Jona Braun, Kouroche Bouchiat'
+__email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, kbouchiat@student.ethz.ch"
+
 import copy
 import os
 

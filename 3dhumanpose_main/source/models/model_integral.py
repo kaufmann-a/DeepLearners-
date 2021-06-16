@@ -13,6 +13,10 @@ from source.models.modules import PPM, ASPP
 
 
 class ResNetCustom(torch.nn.Module):
+    """
+    The ResNetCustom code is based on https://github.com/pytorch/vision/blob/master/torchvision/models/resnet.py
+    """
+
     def __init__(self, type, num_classes=1000):
 
         self.resnet = {'resnet18': {'block': BasicBlock, 'layers': [2, 2, 2, 2]},

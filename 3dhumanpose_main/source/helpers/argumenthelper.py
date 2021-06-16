@@ -1,4 +1,3 @@
-import argparse
 """
 Handles arguments provided in comand line
 """
@@ -6,8 +5,8 @@ Handles arguments provided in comand line
 __author__ = 'Andreas Kaufmann, Jona Braun, Kouroche Bouchiat'
 __email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, kbouchiat@student.ethz.ch"
 
+import argparse
 from source.logcreator.logcreator import Logcreator
-
 
 def get_args():
     """
@@ -15,11 +14,13 @@ def get_args():
     """
     return args
 
+
 def boolean_string(s):
     s = s.lower()
     if s not in {'false', 'true'}:
         raise ValueError('Not a valid boolean string')
     return s == 'true'
+
 
 def parse_args(parser):
     """
