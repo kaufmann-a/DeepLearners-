@@ -1,3 +1,10 @@
+"""
+JointMultiLoss lossfunction
+"""
+
+__author__ = 'Andreas Kaufmann, Jona Braun, Kouroche Bouchiat'
+__email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, kbouchiat@student.ethz.ch"
+
 import torch
 
 from source.lossfunctions.l2jointheatmaploss import L2JointHeatmapLoss

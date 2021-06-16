@@ -1,3 +1,11 @@
+"""
+Helper functions for occluder dataset, based on https://github.com/isarandi/synthetic-occlusion
+
+"""
+
+__author__ = 'Andreas Kaufmann, Jona Braun, Kouroche Bouchiat'
+__email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, kbouchiat@student.ethz.ch"
+
 import os.path
 import random
 import xml.etree.ElementTree
@@ -10,6 +18,7 @@ import torchvision
 from source.logcreator.logcreator import Logcreator
 
 BASE_DIR = os.path.join('VOCdevkit', 'VOC2012')
+
 
 def download_voc_dataset(pascal_voc_root_path, fallback=False):
     # download VOC dataset if not available

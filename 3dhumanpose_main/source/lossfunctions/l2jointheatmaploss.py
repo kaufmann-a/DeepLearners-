@@ -1,3 +1,10 @@
+"""
+L2 Joint Heatmap Loss
+"""
+
+__author__ = 'Andreas Kaufmann, Jona Braun, Kouroche Bouchiat'
+__email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, kbouchiat@student.ethz.ch"
+
 import math
 import torch
 

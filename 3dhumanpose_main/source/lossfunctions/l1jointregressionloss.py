@@ -1,3 +1,11 @@
+"""
+L1 Joint Regression Loss
+
+"""
+
+__author__ = 'Andreas Kaufmann, Jona Braun, Kouroche Bouchiat'
+__email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, kbouchiat@student.ethz.ch"
+
 import torch
 import torch.nn as nn
 
@@ -14,27 +22,6 @@ def weighted_l1_loss(input, target, weights, size_average, norm=False):
         return out.sum() / num_valid
     else:
         return out.sum()
-
-
-class L1JointRegressionLoss_eth_code(nn.Module):
-    def __init__(self, num_joints, size_average=True, reduce=True, norm=False):
-        super(L1JointRegressionLoss_eth_code, self).__init__()
-        self.size_average = size_average
-        self.reduce = reduce
-        self.num_joints = num_joints
-        self.norm = norm
-
-    def _assert_no_grad(self, tensor):
-        assert not tensor.requires_grad, \
-            "nn criterions don't compute the gradient w.r.t. targets - please " \
-            "mark these tensors as not requiring gradients"
-
-    def forward(self, preds, gt_joints, gt_joints_vis):
-        pred_jts = preds.reshape((preds.shape[0], self.num_joints * 3))
-
-        self._assert_no_grad(gt_joints)
-        self._assert_no_grad(gt_joints_vis)
-        return weighted_l1_loss(pred_jts, gt_joints, gt_joints_vis, self.size_average, self.norm)
 
 
 class L1JointRegressionLoss(torch.nn.Module):
