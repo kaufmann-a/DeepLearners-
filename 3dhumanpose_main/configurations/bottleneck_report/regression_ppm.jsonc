@@ -82,8 +82,7 @@
     },
     "inference" : {
         "general" : {
-            "foreground_threshold" : 0.25,
-            "use_original_image_size" : false,
+
         }
     }
 }
