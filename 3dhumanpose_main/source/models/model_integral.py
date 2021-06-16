@@ -1,3 +1,10 @@
+"""
+Integral Human Pose Model
+"""
+
+__author__ = 'Andreas Kaufmann, Jona Braun, Kouroche Bouchiat'
+__email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, kbouchiat@student.ethz.ch"
+
 import math
 
 import torch
@@ -194,6 +201,10 @@ class JointIntegralRegressor(torch.nn.Module):
 
 
 class ModelIntegralPoseRegression(BaseModel):
+    """
+    Based on https://github.com/JimmySuen/integral-human-pose
+    """
+
     name = 'IntegralPoseRegressionModel'
     resnet_nr_output_channels = {
         "resnet18": 512,

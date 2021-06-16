@@ -2,6 +2,10 @@
 reference: https://github.com/lucidrains/bottleneck-transformer-pytorch/blob/c9163489872697ca13500fa27cfc4a33915429e6/bottleneck_transformer_pytorch/bottleneck_transformer_pytorch.py
 """
 
+__author__ = 'Andreas Kaufmann, Jona Braun, Kouroche Bouchiat'
+__email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, kbouchiat@student.ethz.ch"
+
+
 import torch
 from einops import rearrange
 from torch import nn, einsum

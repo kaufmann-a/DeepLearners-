@@ -1,3 +1,11 @@
+"""
+Alex Net Backbone provided by ETH
+"""
+
+__author__ = 'Andreas Kaufmann, Jona Braun, Kouroche Bouchiat'
+__email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, kbouchiat@student.ethz.ch"
+
+
 import torch
 import torch.nn as nn
 

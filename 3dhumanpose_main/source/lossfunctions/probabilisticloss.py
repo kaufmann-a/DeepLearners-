@@ -1,3 +1,11 @@
+"""
+Class Joint Probabilistic Loss
+"""
+
+__author__ = 'Andreas Kaufmann, Jona Braun, Kouroche Bouchiat'
+__email__ = "ankaufmann@student.ethz.ch, jonbraun@student.ethz.ch, kbouchiat@student.ethz.ch"
+
+
 import torch
 from torch.distributions.categorical import Categorical
 
