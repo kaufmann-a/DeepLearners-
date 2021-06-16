@@ -162,9 +162,6 @@ class Engine:
 
         end = time.time()
 
-        # h36m_preds_in_patch_with_score = []
-        # h36m_preds_in_patch_with_score_idx = []
-
         # for all batches
         for batch_idx, data in enumerate(loop):
             # measure data loading time
@@ -186,7 +183,7 @@ class Engine:
 
             # compute loss
             loss_rv = self.loss_function(predictions, batch_label, batch_label_weight)
-            del batch_data, batch_label, batch_label_weight
+            del batch_data, batch_label, batch_label_weight, predictions
 
             if isinstance(loss_rv, dict):
                 loss = loss_rv['loss']
@@ -210,28 +207,11 @@ class Engine:
 
             del loss
 
-            # update metrics
-            # preds_with_score = self.result_func(patch_width=self.patch_size[0],
-            #                                     patch_height=self.patch_size[1],
-            #                                     preds=predictions)
-            # filter h36m samples
-            # h36m_samples_batch_idx = np.asarray(meta["name"]) == "h36m"
-            # h36m_preds_in_patch_with_score.append(preds_with_score[h36m_samples_batch_idx])
-            #
-            # h36m_preds_in_patch_with_score_idx.append((meta["idx"][h36m_samples_batch_idx]).detach().cpu().numpy())
-            del predictions  # , preds_with_score
-
             # measure elapsed time
             batch_time.update(time.time() - end)
             end = time.time()
 
         loop.close()
-
-        # to array
-        # h36m_preds_in_patch_with_score = np.vstack(h36m_preds_in_patch_with_score)
-        # # TODO instead of sorting pass the index to the evaluate function
-        # sorted_idx = np.hstack(h36m_preds_in_patch_with_score_idx).argsort()
-        # h36m_preds_in_patch_with_score = h36m_preds_in_patch_with_score[sorted_idx]
 
         train_loss = loss_metric.avg
 
