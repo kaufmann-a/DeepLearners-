@@ -312,7 +312,6 @@ class Engine:
     def evaluate(self, epoch, preds_in_patch_with_score, val_loader, final_output_path, debug=False):
         print("Evaluation step")
 
-        # TODO also evaluate on mpii?
         for image_set in val_loader.dataset.datasets:  # iterate through all datasets
             if image_set.name == "h36m":  # evaluate on h36m
                 imdb_list = image_set.db
@@ -322,8 +321,6 @@ class Engine:
                 preds_in_img_with_score = []
 
                 for n_sample in range(len(image_set)):
-                    # TODO we not neccessaraly pick the "preds_in_patch_with_score[n_sample]" of the h36m set (could also be the mpii),
-                    #  it depends on the order of the paramter "dataset" : ["h36m", "mpii"] in the config file
                     preds_in_img_with_score.append(
                         trans_coords_from_patch_to_org_3d(preds_in_patch_with_score[n_sample],
                                                           imdb_list[n_sample]['center_x'],
