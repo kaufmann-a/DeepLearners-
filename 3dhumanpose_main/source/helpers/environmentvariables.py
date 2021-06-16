@@ -42,6 +42,12 @@ def _find_dotenv(filename='.env', raise_error_if_not_found=False, usecwd=False):
         if os.path.isfile(check_path):
             return check_path
 
+    # check if default .env available
+    if filename != '.env_default':
+        default_dotenv = _find_dotenv('.env_default')
+        if os.path.isfile(default_dotenv):
+            return default_dotenv
+
     if raise_error_if_not_found:
         raise IOError('File not found')
 
