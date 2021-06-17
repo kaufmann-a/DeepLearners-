@@ -1,0 +1,88 @@
+{
+    "environment": {
+        "name" : "Name of the run - this is just a default config file",
+        "output_path": "getenv('OUTPUT_PATH')", //Creates a folder with name output_path in this folder traininglogs etc. will be saved
+        "log_file" : "logs.txt" //Name of the log file
+    },
+    "data_collection" : {
+        "folder" : "getenv('DATA_COLLECTION')",
+        "dataset" : ["h36m", "mpii"],
+        "augmentations" : {
+            "scale_factor" : 0,
+            "rotation_factor" : 0,
+            "color_factor": 0,
+            "random_flip" : false,
+            "voc_occluder_datapath" : "getenv('VOC_DATASET')",
+            "voc_occluder" : false,
+            "voc_occluder_p" : 0.5,
+        },
+        "h36m_params" : {
+            "train_set": "train",
+            "val_set": "val",
+            "num_joints" : 17,
+            "num_cams": 4,
+        },
+         "mpii_params" : {
+            "train_set": "train",
+            "val_set": "valid",
+            "num_joints" : 16,
+            "num_cams": 1,
+        },
+        "image_size": [256, 256],
+        "z_weight" : 1.0,
+    },
+    "training": {
+        "general" : {
+            "batch_size": 24,
+            "num_epochs" : 140,
+            "checkpoint_save_interval" : 2,
+            "num_workers" : 10,
+            "shuffle_data" : true,
+            "log_to_comet" : true,
+            "comet" : {
+                "tags" : ["occluder-exp", "aug-exp"]
+            },
+        },
+        "model": {
+            "name": "IntegralPoseRegressionModel",  //  ResPoseNet_Regression, PoseAlexNetReg
+            "num_joints" : 17,
+            "resnet_model" : "resnet50", //"resnet18", "resnet34", "resnet101", "resnet152"
+            "num_deconv_layers" : 3,
+            "num_deconv_filters" : 256,
+            "kernel_size" : 4,
+            "depth_dim" : 64,
+            "deconv_use_upsample" : false,
+            "train_heatmaps_only" : true,
+            "infer_with_argmax" : true,
+        },
+        "optimizer": {
+            "name": "adam",
+            "lr": 0.0001,
+            "beta1": 0.9,
+            "beta2": 0.999
+        },
+        "loss": {
+            "loss_function": "JointProbabilisticLoss", // L1JointRegressionLoss
+            "loss_weight_heatmap": 0.0,
+            "loss_weight_regression": 1.0,
+            "monte_carlo_samples" : 1,
+        },
+        "lr_scheduler": {
+            "name": "multiStepLR",
+            "stepLR": {
+                "step_size" : 10,
+                "gamma" : 0.1,
+            },
+            "multiStepLR": {
+                "milestones" : [40,60],
+                "gamma" : 0.1,
+            }
+        },
+    },
+    "inference" : {
+        "general" : {
+            "foreground_threshold" : 0.25,
+            "use_original_image_size" : false,
+        }
+    }
+}
