@@ -40,7 +40,7 @@ A sample .env file could look as follows:
 | Description | Datasets | Config file | Validation score | Submission score | Command |
 | ----------- | -------- |------------ | ---------------- | ---------------- | ------- |
 | Best submission | h36m trainval,</br>mpii trainval | `./configurations/best/regression_exp_findings_trainval.jsonc` | - | 37.30 | `bsub -n 5 -W 120:00 -J "trainval" -R "rusage[mem=2048, ngpus_excl_p=1]" -R "select[gpu_model0==GeForceRTX2080Ti]" 'python train.py --configuration ./configurations/best/regression_exp_findings_trainval.jsonc'` |
-| Best trained only on training data set | h36m train,</br>mpii train | `./configurations/best/regression_exp_findings.jsonc` |  42.64 | ... | `bsub -n 5 -W 120:00 -J "train" -R "rusage[mem=2048, ngpus_excl_p=1]" -R "select[gpu_model0==GeForceRTX2080Ti]" 'python train.py --configuration ./configurations/best/regression_exp_findings.jsonc'` |
+| Best trained only on training data set | h36m train,</br>mpii train | `./configurations/best/regression_exp_findings.jsonc` |  42.64 | 41.80 | `bsub -n 5 -W 120:00 -J "train" -R "rusage[mem=2048, ngpus_excl_p=1]" -R "select[gpu_model0==GeForceRTX2080Ti]" 'python train.py --configuration ./configurations/best/regression_exp_findings.jsonc'` |
 
 4. The result of the trainings can be found by default (see [2. Add environment variables](#2-add-environment-variables)) in the folder `./trainings`
    - The folders have following naming convention: `<datetime>-<configfile_name>` (see [Training folder structure](#training-folder-structure))
