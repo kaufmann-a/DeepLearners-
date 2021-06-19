@@ -29,7 +29,6 @@ class Prediction(object):
     @staticmethod
     def get_dataset_config():
         """
-        TODO Very ugly; Probably better to ad a parameter for the test set name or ...?
 
         Forces dataset to be "h36m" and the attribute h36m_params.val_set to be "test".
 
