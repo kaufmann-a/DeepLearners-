@@ -15,7 +15,18 @@
 - Add a file called `.env` to the directory `./DeepLearners/3dhumanpose_main`. In the file add the following environment variables:
     - `OUTPUT_PATH`=Folderpath to which the model checkpoints etc. should be saved
     - `DATA_COLLECTION`=Path to training data
-    - `VOC_DATASET`=Path to VOC occluder dataset (The VOC_DATASET is downloaded automatically to the set directory. Nevertheless, on leonhard a redirection of the VOC_DATASET path to the scratch (`/cluster/scratch/<username>/`) is recommended due to the _file count limit_.)
+    - `VOC_DATASET`=Path to VOC occluder dataset
+       - The VOC_DATASET is downloaded automatically to the set directory. Nevertheless, on leonhard a redirection of the VOC_DATASET path to the scratch (`/cluster/scratch/<username>/`) is recommended due to the _file count limit_. 
+       - **Unfortunately the download server is often not availabel and hence the download not possible. Allthough we implemented a fallback to a mirror it might still happen that the downloaded fails. In that case an error message "ERROR: Occluder could not be initialized, training will be performed without occluder" will be printed to the stdout. In the case of success the message "Occluder data successfully loaded." will be printed. We recommend to check if this error appeared and in that case manually download the dataset.**
+       - The dataset can be downloaded from the offical source http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar. Or for instance from this mirror http://pjreddie.com/media/files/VOCtrainval_11-May-2012.tar.
+       - The folder structure should then be:
+            ```
+            +-- VOC_DATASET/VOCdevkit/VOC2012/
+                +-- Annotations
+                +-- ImageSets
+                +-- JPEGImages
+                +-- ...
+            ```
 
 A sample .env file could look as follows:
   ```
