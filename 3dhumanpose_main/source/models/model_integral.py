@@ -135,7 +135,6 @@ class JointHeatmapDecoder(torch.nn.Module):
 
         self.upsample_features = torch.nn.Sequential(*upsample_module_list)
 
-        # TODO: Add configurable "non-bias" end? (see `with_bias_end' in deconv_head.py)
         self.features_to_heatmaps = torch.nn.Conv2d(num_filters, num_joints * depth_dim, kernel_size=1)
 
         JointHeatmapDecoder._init_weights(self)
