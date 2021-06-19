@@ -88,6 +88,7 @@ class JointDataset(Dataset):
         if self.augmentations.voc_occluder and self.is_train:
             try:
                 self.occluders = voc_occluders.load_occluders(self.augmentations.voc_occluder_datapath)
+                Logcreator.debug("Occluder data successfully loaded.")
             except:
                 Logcreator.error("Occluder could not be initialized, training will be performed without occluder")
 
