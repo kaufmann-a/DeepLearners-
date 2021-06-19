@@ -26,7 +26,7 @@ def download_voc_dataset(pascal_voc_root_path, fallback=False):
         # overwrite the url to download from a mirror and not the official website
         torchvision.datasets.voc.DATASET_YEAR_DICT = {
             '2012': {
-                'url': 'http://pjreddie.com/media/files/VOCtrainval_11-May-2012.tar ',
+                'url': 'http://pjreddie.com/media/files/VOCtrainval_11-May-2012.tar',
                 'filename': 'VOCtrainval_11-May-2012.tar',
                 'md5': '6cd6e144f989b92b3379bac3b3de84fd',
                 'base_dir': BASE_DIR
