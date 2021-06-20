@@ -38,7 +38,7 @@
             "checkpoint_save_interval" : 2,
             "num_workers" : 10,
             "shuffle_data" : true,
-            "log_to_comet" : true,
+            "log_to_comet" : false,
             "comet" : {
                 "tags" : ["exp-findings"]
             },
