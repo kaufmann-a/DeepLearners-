@@ -17,7 +17,7 @@
     - `DATA_COLLECTION`=Path to training data
     - `VOC_DATASET`=Path to VOC occluder dataset
        - The VOC_DATASET is downloaded automatically to the set directory. Nevertheless, on leonhard a redirection of the VOC_DATASET path to the scratch (`/cluster/scratch/<username>/`) is recommended due to the _file count limit_. 
-       - Unfortunately the download server is often not availabel and hence the download not possible. Allthough we implemented a fallback to a mirror it might still happen that the download fails. In that case an error message _"ERROR: Occluder could not be initialized, training will be performed without occluder"_ will be printed to the stdout. In the case of success the message _"Occluder data successfully loaded."_ will be printed. We recommend to check if this error appeared and in that case manually download the dataset.
+       - Unfortunately the download server is often not available and hence the download not possible. Allthough we implemented a fallback to a mirror it might still happen that the download fails. In that case an error message _"ERROR: Occluder could not be initialized, training will be performed without occluder"_ will be printed to the stdout. In the case of success the message _"Occluder data successfully loaded."_ will be printed. We recommend to check if this error appeared and in that case manually download the dataset.
        - The dataset can be downloaded from the offical source http://host.robots.ox.ac.uk/pascal/VOC/voc2012/VOCtrainval_11-May-2012.tar or for instance from this mirror http://pjreddie.com/media/files/VOCtrainval_11-May-2012.tar.
        - The folder structure should then be:
             ```
@@ -27,6 +27,7 @@
                 +-- JPEGImages
                 +-- ...
             ```
+            Please make sure to specify the folderpath to the location where the foler ```VOCdevkit``` is.
 
 A sample .env file could look as follows:
   ```
